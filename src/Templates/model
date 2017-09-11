@@ -1,0 +1,18 @@
+<?php
+
+namespace {{namespace}};
+
+use {{parent_full}};
+{{imports}}
+
+/**
+ * Class {{class}}
+ *
+{{properties}}
+ *
+ * @package {{namespace}}
+ */
+class {{class}} extends {{parent}}
+{
+{{body}}
+}
