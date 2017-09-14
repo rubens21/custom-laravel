@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 09, 2017 at 01:39 PM
+-- Generation Time: Sep 14, 2017 at 02:31 AM
 -- Server version: 5.7.16-0ubuntu0.16.04.1
 -- PHP Version: 7.1.1-1+deb.sury.org~xenial+1
 
@@ -24,7 +24,7 @@ CREATE TABLE `author` (
   `id` int(10) NOT NULL,
   `name` varchar(60) NOT NULL,
   `type` enum('beginner','professional','senior','') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='dfgdfg';
 
 -- --------------------------------------------------------
 
@@ -36,10 +36,10 @@ CREATE TABLE `posts` (
   `id` int(11) NOT NULL,
   `title` text NOT NULL,
   `content` text NOT NULL,
-  `publicated_at` date NOT NULL,
+  `publicated_at` date DEFAULT NULL,
   `fk_author` int(10) NOT NULL,
-  `is_aproved` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `aproved` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='nd=Posts';
 
 -- --------------------------------------------------------
 
@@ -50,7 +50,7 @@ CREATE TABLE `posts` (
 CREATE TABLE `tagged` (
   `fk_post` int(11) NOT NULL,
   `fk_tag` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='pivot=tags|posts';
 
 -- --------------------------------------------------------
 
