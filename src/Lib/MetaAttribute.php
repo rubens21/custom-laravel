@@ -206,7 +206,7 @@ class MetaAttribute
     /**
      * @return MetaClass
      */
-    public function getForeignKeyMetaClass(): MetaClass
+    public function getForeignKeyMetaClass(): ?MetaClass
     {
         return $this->foreignKeyMetaClass;
     }

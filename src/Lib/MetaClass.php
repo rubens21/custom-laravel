@@ -161,7 +161,20 @@ class MetaClass
 
     private function getMetaData()
     {
-        return json_decode($this->getComment(), true) ?? null;
+        parse_str($this->getComment(), $output);
+        return $output ?? null;
+    }
+
+    public function isAPivot():?bool
+    {
+        $meta = $this->getMetaData();
+        var_dump($meta);
+        return ($meta && isset($meta['pivot']));
+    }
+
+    public function getPivotedTalbes():array
+    {
+        return preg_split('/\|/',$this->getMetaData()['pivot']);
     }
 
     public function getNamespace()
@@ -174,7 +187,7 @@ class MetaClass
         return implode('\\', $ns);
     }
 
-    private function getClassName()
+    public function getClassName()
     {
         return Str::singular($this->getName());
     }
@@ -230,8 +243,25 @@ class MetaClass
         $this->fieldReference[$metaClass->getName()] = [
             'local_col' => $fieldName,
             'metaClass' => $metaClass,
-            'oneToOne' => $oneToOne
+            'relationshipt' => $oneToOne ? 'hasOne' : 'hasMany'
             ];
+        return $this;
+    }
+    public function addPivotedFieldReference(MetaClass $metaClass, MetaClass $pivotMetaClass,$myFieldName,$otherFieldName ,$myRefFieldName, $otherRefFieldName)
+    {
+        $this->uses[$metaClass->getNamespace()] = true;
+        $this->fieldReference[$metaClass->getName()] = [
+            'metaClass' => $metaClass,
+            'pivot_table' => $pivotMetaClass->getTableName(),
+            'local_col' => $myFieldName,
+            'other_col' => $otherFieldName,
+            'foreign_col' => $myRefFieldName,
+            'other_pivot_col' => $otherRefFieldName,
+            'relationshipt' =>  'belongsToMany'
+            ];
+
+        //belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null, $parentKey = null, $relatedKey = null
+        //$this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id')->using('App\UserRole');;
         return $this;
     }
 
@@ -254,7 +284,7 @@ class MetaClass
             /** @var MetaClass $metaClass */
             $metaClass = $relationship['metaClass'];
             $relations[$metaClass->getTableName()] = [
-                'rel' => $relationship['oneToOne'] ? 'hasOne' : 'hasMany',
+                'rel' => $relationship['relationshipt'],
                 'model' => $metaClass->getClassName(),
                 'local_col' => 'id',
                 'foreign_col' => $relationship['local_col']

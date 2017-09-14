@@ -83,13 +83,36 @@ class Customize
             $uniqueFields = $this->getUniqueFields($tableName);
             echo $tableName;
             foreach ($rel as $localCol => $fk) {/** @var \Doctrine\DBAL\Schema\ForeignKeyConstraint $fk */
-
+                $metaClass = $this->classMap[$tableName];
                 $referencedMetaClass = $this->classMap[$fk->getForeignTableName()];
+
                 //let's tell to the class what is the other class it refereces to
                 $this->classMap[$tableName]->getField($localCol)->setForeignKeyMetaClass($referencedMetaClass);
+                if($metaClass->isAPivot()) {
+                    //it will be run twice because a pivot references to 2 tables
 
-                $foreignColName = $fk->getForeignColumns()[0];//more fields in the future MAYBE!
-                $referencedMetaClass->addFieldReference($localCol, $this->classMap[$tableName], in_array($localCol, $uniqueFields));
+                    $referencedTables = $metaClass->getPivotedTalbes();
+
+
+                    $otherReferencedTableName = ($referencedTables[0] == $referencedMetaClass->getTableName()) ? $referencedTables[1] : $referencedTables[0];
+                    $otherReferencedMetaClass = $this->classMap[$otherReferencedTableName];
+                    foreach ($metaClass->getFields() as $fieldName => $field){
+//                        if($field->isForeingKey() && $field->getForeignKeyMetaClass()->getTableName() === $otherReferencedTableName){
+//                            foreach ($field->getForeignKeyMetaClass()->)
+//
+//                        }
+//                        $otherTableFieldName =
+                    }
+
+                    $referencedMetaClass->addPivotedFieldReference($otherReferencedMetaClass, $metaClass, $fk->getForeignColumns()[0], 'dd', $localCol, 'dududu' );
+
+                    //$this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id')->using('App\UserRole');;
+                }else {
+                    $referencedMetaClass->addFieldReference($localCol, $metaClass, in_array($localCol, $uniqueFields));
+                }
+
+                //$foreignColName = $fk->getForeignColumns()[0];//more fields in the future MAYBE!
+
 
                     //next steps: pegar pivot
 //                $this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id');
