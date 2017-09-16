@@ -52,57 +52,69 @@ class Customize
 
     public function map()
     {
-        $tables = $this->connection->getDoctrineSchemaManager()->listTableNames();
+
 
         $this->connection
             ->getDoctrineConnection()
             ->getDatabasePlatform()
             ->registerDoctrineTypeMapping('enum', 'string');
 
-        $tableComments = $this->getTablesComment();
+        $tables = array_diff($this->connection->getDoctrineSchemaManager()->listTableNames(), $this->ignoreTableList);
+        $this->mapTables($tables);
+        $this->mapFields($tables);
+        $this->identifyRelationships();
+    }
 
+    private function mapTables(array $tables)
+    {
+        $tableComments = $this->getTablesComment();
         foreach ($tables as $tableName) {
             if(!in_array($tableName, $this->ignoreTableList)) {
                 $this->tables[$tableName] = $this->connection->getDoctrineSchemaManager()->listTableDetails($tableName);
                 $metaClass = new MetaClass($tableName);
                 $metaClass->setComment($tableComments[$tableName]);
-                $uniqueFields = $this->getUniqueFields($tableName);
-                $specializedField = [];
-                foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
-                    foreach ($fk->getLocalColumns() as $fieldName) {
-                        $specializedField[] = $fieldName;
-                        $colunm = $this->tables[$tableName]->getColumn($fieldName);
-
-                        //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
-                        //e um hasMany ou HasOne na outr tabela
-                        $metaClass->addField(new MetaAttributeBelongsTo($colunm, $fk));
-                        echo "\n";
-                        echo $fk->getForeignTableName();
-                        echo "\n";
-                        echo $fk->getForeignColumns()[0];
-                        echo "\n";
-                        $docrineTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
-                        $refericiedCol = $docrineTable->getColumn($fk->getForeignColumns()[0]);
-                        if(in_array($fieldName, $uniqueFields)) {
-                            //hasOne!
-                            $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName);
-                        } else {
-                            $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName);
-                        }
-                    }
-                }
-
-                foreach ($this->tables[$tableName]->getColumns() as $col) {
-                    if(!in_array($col->getName(), $specializedField)) {
-                        $metaClass->addField(new MetaAttribute($col));
-                    }
-                }
-
-
                 $this->classMap[$tableName] = $metaClass;
             }
         }
-        $this->identifyRelationships();
+    }
+
+    private function mapFields(array $tables)
+    {
+        foreach ($tables as $tableName) {
+            $metaClass = $this->classMap[$tableName];
+            $uniqueFields = $this->getUniqueFields($tableName);
+            $specializedField = [];
+            foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
+                foreach ($fk->getLocalColumns() as $fieldName) {
+                    $specializedField[] = $fieldName;
+                    $colunm = $this->tables[$tableName]->getColumn($fieldName);
+
+                    //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
+                    //e um hasMany ou HasOne na outr tabela
+                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $fk));
+                    echo "\n";
+                    echo $fk->getForeignTableName();
+                    echo "\n";
+                    echo $fk->getForeignColumns()[0];
+                    echo "\n";
+                    $docrineTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
+                    $refericiedCol = $docrineTable->getColumn($fk->getForeignColumns()[0]);
+                    if(in_array($fieldName, $uniqueFields)) {
+                        //hasOne!
+                        $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName);
+                    } else {
+                        $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName);
+                    }
+                }
+            }
+
+            foreach ($this->tables[$tableName]->getColumns() as $col) {
+                if(!in_array($col->getName(), $specializedField)) {
+                    $metaClass->addField(new MetaAttribute($col));
+                }
+            }
+        }
+
     }
 
     private function identifyRelationships()
@@ -187,6 +199,5 @@ class Customize
 //        }
         return $fields;
     }
-
 
 }
