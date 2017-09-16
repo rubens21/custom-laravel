@@ -9,8 +9,8 @@
 namespace CST21\Lib;
 
 
+use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Illuminate\Support\Str;
 
 class MetaAttribute
@@ -202,9 +202,13 @@ class MetaAttribute
 //        $this->foreignKeyMetaClass = $foreignKeyMetaClass;
 //    }
 //
-//    public function getImportClasses()
-//    {
-//        return $this->getForeignKeyMetaClass()->getNamespace();
-//    }
+    public function getImportClasses(): array
+    {
+        if($this->getPhpFieldType() === 'Carbon') {
+            return [Carbon::class];
+        } else {
+            return [];
+        }
+    }
 
 }

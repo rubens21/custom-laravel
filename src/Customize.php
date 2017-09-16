@@ -88,17 +88,17 @@ class Customize
                 foreach ($fk->getLocalColumns() as $fieldName) {
                     $specializedField[] = $fieldName;
                     $colunm = $this->tables[$tableName]->getColumn($fieldName);
-
+                    $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
                     //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
                     //e um hasMany ou HasOne na outr tabela
-                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $fk));
-                    $docrineTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
-                    $refericiedCol = $docrineTable->getColumn($fk->getForeignColumns()[0]);
+                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
+                    $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
+                    $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
                     if(in_array($fieldName, $uniqueFields)) {
                         //hasOne!
-                        $this->classMap[$fk->getForeignTableName()]->addField(new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName));
+                        $referenciedMetaClass->addField(new MetaAttributeHasOne($refericiedCol, $metaClass, $fk));
                     } else {
-                        $this->classMap[$fk->getForeignTableName()]->addField(new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName));
+                        $referenciedMetaClass->addField(new MetaAttributeHasMany($refericiedCol, $metaClass, $fk));
                     }
                 }
             }

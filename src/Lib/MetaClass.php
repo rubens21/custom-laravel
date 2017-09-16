@@ -96,7 +96,7 @@ class MetaClass
         $template = str_replace('{{class}}', $this->getClassName(), $template);
         $template = str_replace('{{body}}', $this->getBodyAttributes(), $template);
         $template = str_replace('{{properties}}', $this->getProperties(), $template);
-//        $template = str_replace('{{imports}}', $this->getImports($model), $template);
+        $template = str_replace('{{imports}}', $this->getImports(), $template);
         return $template;
     }
 
@@ -177,14 +177,31 @@ class MetaClass
         return preg_split('/\|/',$this->getMetaData()['pivot']);
     }
 
-    public function getNamespace()
+    /**
+     * @return string Class name including namespace
+     */
+    public function getFullClassName()
+    {
+        return implode('\\', $this->getFullClassNameLevels());
+    }
+
+    /**
+     * @return array Class name including namespace and in array format
+     */
+    public function getFullClassNameLevels()
     {
         $meta = $this->getMetaData();
         $ns = self::DEFAULT_NS;
         if($meta && isset($meta['ns'])) {
-            $ns[] = $meta['ns'];
+            $ns = array_merge($ns, explode('\\', $meta['ns']));
         }
-        return implode('\\', $ns);
+        $ns[] = $this->getClassName();
+        return $ns;
+    }
+
+    public function getNamespace()
+    {
+        return implode('\\', array_slice($this->getFullClassNameLevels(), 0, -1));
     }
 
     public function getClassName()
@@ -301,9 +318,33 @@ class MetaClass
     {
         $relationshipd = $this->getRelationShips();
 
-        return 'const RELATIONSHIPS = '.var_export($relationshipd, true);
+        return 'private $__relationships = '.var_export($relationshipd, true);
 
 
+    }
+
+    private function getImports()
+    {
+        $imports = [];
+        foreach ($this->getFields() as $field) {
+            $imports = array_merge($imports, $field->getImportClasses());
+        }
+        $classes = [];
+        foreach (array_unique($imports) as $class) {
+            $classes[] = 'use '.$class.';';
+        }
+
+//        foreach ($this->fieldReference as $metaClassName => $relationship) {
+//            /** @var MetaClass $metaClass */
+//            $metaClass = $relationship['metaClass'];
+//            $relations[$metaClass->getTableName()] = [
+//                'rel' => $relationship['relationshipt'],
+//                'model' => $metaClass->getClassName(),
+//                'local_col' => 'id',
+//                'foreign_col' => $relationship['local_col']
+//            ];
+//        }
+        return implode("\n", $classes);
     }
 
 

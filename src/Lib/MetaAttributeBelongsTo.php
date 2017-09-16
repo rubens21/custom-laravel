@@ -14,17 +14,30 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 
 class MetaAttributeBelongsTo extends MetaAttribute
 {
+    /**
+     * @var MetaClass
+     */
+    private $relatedClass;
 
-    public function __construct(Column $column, ForeignKeyConstraint $fk)
+    public function __construct(Column $column, MetaClass $relatedClass, ForeignKeyConstraint $fk)
     {
         parent::__construct($column);
-        $this->setForeignKeyConstraint($fk);//->setDoctrineColunm($column);
+        $this->setForeignKeyConstraint($fk);
+        $this->relatedClass = $relatedClass;
     }
 
     /**
      * @var ForeignKeyConstraint
      */
     private $foreignKeyConstraint;
+
+    /**
+     * @return MetaClass
+     */
+    public function getRelatedClass(): MetaClass
+    {
+        return $this->relatedClass;
+    }
 
     /**
      * @return ForeignKeyConstraint
@@ -83,6 +96,11 @@ class MetaAttributeBelongsTo extends MetaAttribute
     public function getRelatedModelName()
     {
         return MetaClass::convertTableNameToClassName($this->getForeignKeyConstraint()->getForeignTableName());
+    }
+
+    public function getImportClasses(): array
+    {
+        return [$this->getRelatedClass()->getFullClassName()];
     }
 
 }

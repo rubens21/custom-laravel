@@ -24,35 +24,13 @@ class MetaAttributeHasOne extends MetaAttribute
      */
     private $relatedForignKeyConstraint;
 
-    /**
-     * @var string
-     */
-    private $relatedFieldName;
-
-
-    public function __construct(Column $column, MetaClass $relatedClass, ForeignKeyConstraint $fk, string $relatedFieldName)
+    public function __construct(Column $column, MetaClass $relatedClass, ForeignKeyConstraint $relatedForignKeyConstraint)
     {
         parent::__construct($column);
         $this->setRelatedClass($relatedClass);
-        $this->setRelatedFieldName($relatedFieldName);
-        $this->relatedForignKeyConstraint = $fk;
+        $this->relatedForignKeyConstraint = $relatedForignKeyConstraint;
     }
 
-    /**
-     * @return string
-     */
-    public function getRelatedFieldName(): string
-    {
-        return $this->relatedFieldName;
-    }
-
-    /**
-     * @param string $relatedFieldName
-     */
-    public function setRelatedFieldName(string $relatedFieldName)
-    {
-        $this->relatedFieldName = $relatedFieldName;
-    }
 
     /**
      * @return ForeignKeyConstraint
@@ -106,7 +84,7 @@ class MetaAttributeHasOne extends MetaAttribute
                 'rel' => 'hasOne',
                 'model' => $this->getRelatedModelName(),
                 'local_col' => $this->getFieldName(),
-                'foreign_col' => $this->getRelatedFieldName()
+                'foreign_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0]
             ]
         ];
     }
@@ -114,6 +92,11 @@ class MetaAttributeHasOne extends MetaAttribute
     public function getRelatedModelName()
     {
         return $this->getRelatedClass()->getClassName();
+    }
+
+    public function getImportClasses(): array
+    {
+        return [$this->getRelatedClass()->getFullClassName()];
     }
 
 }
