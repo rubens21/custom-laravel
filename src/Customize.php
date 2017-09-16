@@ -62,7 +62,7 @@ class Customize
         $tables = array_diff($this->connection->getDoctrineSchemaManager()->listTableNames(), $this->ignoreTableList);
         $this->mapTables($tables);
         $this->mapFields($tables);
-        $this->identifyRelationships();
+//        $this->identifyRelationships();
     }
 
     private function mapTables(array $tables)
@@ -92,18 +92,13 @@ class Customize
                     //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
                     //e um hasMany ou HasOne na outr tabela
                     $metaClass->addField(new MetaAttributeBelongsTo($colunm, $fk));
-                    echo "\n";
-                    echo $fk->getForeignTableName();
-                    echo "\n";
-                    echo $fk->getForeignColumns()[0];
-                    echo "\n";
                     $docrineTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineTable->getColumn($fk->getForeignColumns()[0]);
                     if(in_array($fieldName, $uniqueFields)) {
                         //hasOne!
-                        $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName);
+                        $this->classMap[$fk->getForeignTableName()]->addField(new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName));
                     } else {
-                        $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName);
+                        $this->classMap[$fk->getForeignTableName()]->addField(new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName));
                     }
                 }
             }
@@ -115,49 +110,6 @@ class Customize
             }
         }
 
-    }
-
-    private function identifyRelationships()
-    {
-        foreach ($this->referenciedTables as $tableName => $metaAttributes) {
-            foreach ($metaAttributes as $metaAttribute)
-            $this->classMap[$tableName]->addField($metaAttribute);
-//            foreach ($rel as $localCol => $fk) {/** @var \Doctrine\DBAL\Schema\ForeignKeyConstraint $fk */
-//                $metaClass = $this->classMap[$tableName];
-//                $referencedMetaClass = $this->classMap[$fk->getForeignTableName()];
-//
-//                //let's tell to the class what is the other class it refereces to
-//                $this->classMap[$tableName]->getField($localCol)->setForeignKeyMetaClass($referencedMetaClass);
-//                if($metaClass->isAPivot()) {
-//                    //it will be run twice because a pivot references to 2 tables
-//
-//                    $referencedTables = $metaClass->getPivotedTalbes();
-//
-//
-//                    $otherReferencedTableName = ($referencedTables[0] == $referencedMetaClass->getTableName()) ? $referencedTables[1] : $referencedTables[0];
-//                    $otherReferencedMetaClass = $this->classMap[$otherReferencedTableName];
-//                    foreach ($metaClass->getFields() as $fieldName => $field){
-////                        if($field->isForeingKey() && $field->getForeignKeyMetaClass()->getTableName() === $otherReferencedTableName){
-////                            foreach ($field->getForeignKeyMetaClass()->)
-////
-////                        }
-////                        $otherTableFieldName =
-//                    }
-//
-//                    $referencedMetaClass->addPivotedFieldReference($otherReferencedMetaClass, $metaClass, $fk->getForeignColumns()[0], 'dd', $localCol, 'dududu' );
-//
-//                    //$this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id')->using('App\UserRole');;
-//                }else {
-//                    $referencedMetaClass->addFieldReference($localCol, $metaClass, in_array($localCol, $uniqueFields));
-//                }
-//
-//                //$foreignColName = $fk->getForeignColumns()[0];//more fields in the future MAYBE!
-//
-//
-//                    //next steps: pegar pivot
-////                $this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id');
-//           }
-        }
     }
 
     /**
