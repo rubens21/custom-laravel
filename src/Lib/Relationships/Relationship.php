@@ -10,6 +10,7 @@ namespace CST21\Lib\Relationships;
 
 
 use CST21\Lib\Code;
+use CST21\Lib\MetaAttribute;
 
 interface Relationship
 {
@@ -19,5 +20,9 @@ interface Relationship
     public function getGetAttributes():string;
     public function getRelAttributes():string;
     public function getImportList():array;
+
+    public function getMetaAttribute():MetaAttribute;
+    public function setMetaAttribute(MetaAttribute $metaAttribute):self;
+
 
 }

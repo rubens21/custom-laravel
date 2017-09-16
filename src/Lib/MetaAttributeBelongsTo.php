@@ -18,7 +18,7 @@ class MetaAttributeBelongsTo extends MetaAttribute
     public function __construct(Column $column, ForeignKeyConstraint $fk)
     {
         parent::__construct($column);
-        $this->setForeignKeyConstraint($fk);
+        $this->setForeignKeyConstraint($fk);//->setDoctrineColunm($column);
     }
 
     /**
@@ -37,20 +37,15 @@ class MetaAttributeBelongsTo extends MetaAttribute
     /**
      * @param ForeignKeyConstraint $foreignKeyConstraint
      */
-    public function setForeignKeyConstraint(ForeignKeyConstraint $foreignKeyConstraint)
+    public function setForeignKeyConstraint(ForeignKeyConstraint $foreignKeyConstraint):self
     {
         $this->foreignKeyConstraint = $foreignKeyConstraint;
+        return $this;
     }
 
-    /**
-     * Translate the name of the attribute to a method name
-     *
-     * @param $name
-     * @return string
-     */
-    protected function transAttToMethod($name, $mode)
+    protected function getRelationshipName($fieldName)
     {
-        return parent::transAttToMethod(str_replace('fk_', '', $name), $mode);
+        return parent::getRelationshipName(str_replace('fk_', '', $fieldName));
     }
 
 //    public function getSetMethodData()
@@ -68,7 +63,7 @@ class MetaAttributeBelongsTo extends MetaAttribute
         return $this->getRelatedModelName();
     }
 
-    protected function getPhpAttributeName()
+    public function getPhpAttributeName()
     {
         return $this->getRelatedModelName();
     }

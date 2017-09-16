@@ -23,6 +23,12 @@ class HasOne implements Relationship
      */
     private $modelTarget;
 
+
+    /**
+     * @var MetaAttribute
+     */
+    private $metaAttribute;
+
     public function __construct(MetaAttribute $localField, MetaClass $modelTarget)
     {
         $this->localField = $localField;
@@ -32,8 +38,10 @@ class HasOne implements Relationship
 
     public function getPhpDocGetMethod(): array
     {
-        return ['type' => $this->modelTarget->getClassName();
-signature];
+        return [
+            'type' => $this->modelTarget->getClassName(),
+            'signature'=>
+        ];
     }
 
     public function getPhpDocSetMethod(): array
@@ -56,5 +64,27 @@ signature];
         // TODO: Implement getRelAttributes() method.
     }
 
+    /**
+     * @return MetaAttribute
+     */
+    public function getMetaAttribute(): MetaAttribute
+    {
+        return $this->metaAttribute;
+    }
 
+    /**
+     * @param MetaAttribute $metaAttribute
+     * @return Relationship
+     */
+    public function setMetaAttribute(MetaAttribute $metaAttribute):Relationship
+    {
+        $this->metaAttribute = $metaAttribute;
+        return $this;
+    }
+
+
+    public function getImportList(): array
+    {
+        // TODO: Implement getImportList() method.
+    }
 }

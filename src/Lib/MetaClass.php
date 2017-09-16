@@ -27,7 +27,7 @@ class MetaClass
     private $comment;
 
     /**
-     * @var MetaAttribute[]
+     * @var MetaAttribute[][]
      */
     private $fields = [];
 
@@ -41,7 +41,7 @@ class MetaClass
      */
     private $uses = [];
 
-    const IGNORE_FIELDS = ['id', 'created_at', 'updated_at'];
+    const IGNORE_ATTRIBUTES = ['id', 'createdAt', 'updatedAt'];
 
     const DEFAULT_NS = ['App'];
 
@@ -140,14 +140,14 @@ class MetaClass
         return $this->fields;
     }
 
-    /**
-     * @param $colunmName
-     * @return MetaAttribute
-     */
-    public function getField($colunmName): MetaAttribute
-    {
-        return $this->fields[$colunmName];
-    }
+//    /**
+//     * @param $colunmName
+//     * @return MetaAttribute[]
+//     */
+//    public function getField($colunmName): array
+//    {
+//        return $this->fields[$colunmName];
+//    }
 
     /**
      * @param MetaAttribute $metaAttribute
@@ -155,7 +155,7 @@ class MetaClass
      */
     public function addField(MetaAttribute $metaAttribute)
     {
-        $this->fields[$metaAttribute->getFieldName()] = $metaAttribute;
+        $this->fields[] = $metaAttribute;
         return $this;
     }
 
@@ -206,7 +206,7 @@ class MetaClass
         $properties = [];
         $longest = 0;
         foreach ($this->getFields() as $fieldName => $metaAttribute) {
-            if(!in_array($fieldName, self::IGNORE_FIELDS)) {
+            if(!in_array($metaAttribute->getPhpAttributeName(), self::IGNORE_ATTRIBUTES)) {
                 $get = $metaAttribute->getGetMethodData();
                 $set = $metaAttribute->getSetMethodData();
                 $longest = strlen($get['type']) > $longest ? strlen($get['type']) : $longest;

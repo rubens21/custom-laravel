@@ -53,6 +53,16 @@ class MetaAttribute
         return $this->column;
     }
 
+    /**
+     * @param Column $column
+     * @return MetaAttribute
+     */
+    public function setDoctrineColunm(Column $column):self
+    {
+        $this->column = $column;
+        return $this;
+    }
+
 
     public function getSetMethodData()
     {
@@ -78,12 +88,17 @@ class MetaAttribute
     /**
      * Translate the name of the attribute to a method name
      *
-     * @param $name
+     * @param $fieldName
      * @return string
      */
-    protected function transAttToMethod($name, $mode)
+    protected function transAttToMethod($fieldName, $mode)
     {
-        return $this->getMethodModePrefix($mode) . studly_case($name);
+        return $this->getMethodModePrefix($mode) . $this->getRelationshipName($fieldName);
+    }
+
+    protected function getRelationshipName($fieldName)
+    {
+        return studly_case($fieldName);
     }
 
     private function getMethodModePrefix($mode)
@@ -147,7 +162,7 @@ class MetaAttribute
         return $this->transCastMysqlToPhp($this->column->getType());
     }
 
-    protected function getPhpAttributeName()
+    public function getPhpAttributeName()
     {
         return Str::camel($this->getFieldName());
     }
