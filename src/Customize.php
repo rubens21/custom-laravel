@@ -9,6 +9,7 @@
 namespace CST21;
 
 use CST21\Lib\MetaAttribute;
+use CST21\Lib\MetaAttributeBelongsTo;
 use CST21\Lib\MetaClass;
 use Illuminate\Database\MySqlConnection;
 
@@ -61,20 +62,29 @@ class Customize
                 $metaClass = new MetaClass($tableName);
                 $metaClass->setComment($tableComments[$tableName]);
 
-                foreach ($this->tables[$tableName]->getColumns() as $col) {
-                    $metaClass->addField(new MetaAttribute($col));
-                }
-
+                $specializedField = [];
                 foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
-                    foreach ($fk->getLocalColumns() as $local) {
-                        $metaClass->getField($local)->setForeignKeyConstraint($fk);
-                        $this->constrains[$tableName][$local] = $fk;
+                    foreach ($fk->getLocalColumns() as $fieldName) {
+                        $specializedField[] = $fieldName;
+
+                        //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
+                        //e um hasMany ou HasOne na outr tabela
+                        $metaClass->addField(new MetaAttributeBelongsTo($this->tables[$tableName]->getColumn($fieldName), $fk));
+//                        $this->constrains[$tableName][$local] = $fk;
                     }
                 }
+
+                foreach ($this->tables[$tableName]->getColumns() as $col) {
+                    if(!in_array($col->getName(), $specializedField)) {
+                        $metaClass->addField(new MetaAttribute($col));
+                    }
+                }
+
+
                 $this->classMap[$tableName] = $metaClass;
             }
         }
-        $this->identifyRelationships();
+      //  $this->identifyRelationships();
     }
 
     private function identifyRelationships()

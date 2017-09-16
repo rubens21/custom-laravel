@@ -20,20 +20,15 @@ class MetaAttribute
      */
     private $column;
 
-    /**
-     * @var ForeignKeyConstraint
-     */
-    private $foreignKeyConstraint;
-
-    /**
-     * @var MetaClass
-     */
-    private $foreignKeyMetaClass;
-
-    /**
-     * @var string
-     */
-    private $relType;
+//    /**
+//     * @var MetaClass
+//     */
+//    private $foreignKeyMetaClass;
+//
+//    /**
+//     * @var string
+//     */
+//    private $relType;
 
     const METHOD_SET_MODE = 'set';
 
@@ -58,39 +53,8 @@ class MetaAttribute
         return $this->column;
     }
 
-    public function isForeingKey():bool
-    {
-        return isset($this->foreignKeyConstraint);
-    }
-
-    /**
-     * @return ForeignKeyConstraint
-     */
-    public function getForeignKeyConstraint(): ForeignKeyConstraint
-    {
-        return $this->foreignKeyConstraint;
-    }
-
-    /**
-     * @param ForeignKeyConstraint $foreignKeyConstraint
-     */
-    public function setForeignKeyConstraint(ForeignKeyConstraint $foreignKeyConstraint)
-    {
-        $this->foreignKeyConstraint = $foreignKeyConstraint;
-    }
 
     public function getSetMethodData()
-    {
-        if($this->isForeingKey()) {
-
-            $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE).'(kkk)';
-            return ['type' => '$this', 'signature' => $signature, 'nullable' => $this->column->getNotnull()];
-        } else {
-            return $this->getDataForSetAttribute();
-        }
-    }
-
-    private function getDataForSetAttribute()
     {
         $args = $this->getPhpFieldType().' $'.$this->getPhpAttributeName();
         if(!$this->column->getNotnull()) {
@@ -99,6 +63,7 @@ class MetaAttribute
         $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE).'('.$args.')';
         return ['type' => '$this', 'signature' => $signature, 'nullable' => $this->column->getNotnull()];
     }
+
 
     public function getGetMethodData()
     {
@@ -116,7 +81,7 @@ class MetaAttribute
      * @param $name
      * @return string
      */
-    private function transAttToMethod($name, $mode)
+    protected function transAttToMethod($name, $mode)
     {
         return $this->getMethodModePrefix($mode) . studly_case($name);
     }
@@ -177,51 +142,56 @@ class MetaAttribute
         }
     }
 
-    private function getPhpFieldType()
+    protected function getPhpFieldType()
     {
         return $this->transCastMysqlToPhp($this->column->getType());
     }
 
-    private function getPhpAttributeName()
+    protected function getPhpAttributeName()
     {
         return Str::camel($this->getFieldName());
     }
 
-    /**
-     * @return string
-     */
-    public function getRelType(): string
+    public function getRelationshipDefinition():?array
     {
-        return $this->relType;
+        return null;
     }
 
-    /**
-     * @param string $relType
-     */
-    public function setRelType(string $relType)
-    {
-        $this->relType = $relType;
-    }
-
-    /**
-     * @return MetaClass
-     */
-    public function getForeignKeyMetaClass(): ?MetaClass
-    {
-        return $this->foreignKeyMetaClass;
-    }
-
-    /**
-     * @param MetaClass $foreignKeyMetaClass
-     */
-    public function setForeignKeyMetaClass(MetaClass $foreignKeyMetaClass)
-    {
-        $this->foreignKeyMetaClass = $foreignKeyMetaClass;
-    }
-
-    public function getImportClasses()
-    {
-        return $this->getForeignKeyMetaClass()->getNamespace();
-    }
+//    /**
+//     * @return string
+//     */
+//    public function getRelType(): string
+//    {
+//        return $this->relType;
+//    }
+//
+//    /**
+//     * @param string $relType
+//     */
+//    public function setRelType(string $relType)
+//    {
+//        $this->relType = $relType;
+//    }
+//
+//    /**
+//     * @return MetaClass
+//     */
+//    public function getForeignKeyMetaClass(): ?MetaClass
+//    {
+//        return $this->foreignKeyMetaClass;
+//    }
+//
+//    /**
+//     * @param MetaClass $foreignKeyMetaClass
+//     */
+//    public function setForeignKeyMetaClass(MetaClass $foreignKeyMetaClass)
+//    {
+//        $this->foreignKeyMetaClass = $foreignKeyMetaClass;
+//    }
+//
+//    public function getImportClasses()
+//    {
+//        return $this->getForeignKeyMetaClass()->getNamespace();
+//    }
 
 }

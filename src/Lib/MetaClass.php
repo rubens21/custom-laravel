@@ -31,10 +31,10 @@ class MetaClass
      */
     private $fields = [];
 
-    /**
-     * @var MetaAttribute[]
-     */
-    private $fieldReference = [];
+//    /**
+//     * @var MetaAttribute[]
+//     */
+//    private $fieldReference = [];
 
     /**
      * @var array
@@ -61,7 +61,7 @@ class MetaClass
      */
     public function getName():string
     {
-        return Str::studly($this->table);
+        return $this;
     }
     /**
      * @return string
@@ -83,7 +83,7 @@ class MetaClass
 
     public function getFileName()
     {
-        return $this->getName().'.php';
+        return $this->getClassName().'.php';
     }
 
     public function generateCode()
@@ -189,7 +189,11 @@ class MetaClass
 
     public function getClassName()
     {
-        return Str::singular($this->getName());
+        return self::convertTableNameToClassName($this->table);
+    }
+    public static function convertTableNameToClassName(string $tableName)
+    {
+        return Str::ucfirst(Str::singular($tableName));
     }
 
     private function getParentClass()
@@ -219,77 +223,72 @@ class MetaClass
         return implode("\n", $phpDoc);
     }
 
-    /**
-     * @param string $tableName
-     * @param string $fieldName
-     * @return MetaClass|null
-     */
-    public function getFieldReference(string $tableName, string $fieldName): ?MetaClass
-    {
-        if(!isset($this->fieldReference[$tableName]) || !isset($this->fieldReference[$tableName][$fieldName])) {
-            return null;
-        }
-        return $this->fieldReference[$tableName][$fieldName];
-    }
+//    /**
+//     * @param string $tableName
+//     * @param string $fieldName
+//     * @return MetaClass|null
+//     */
+//    public function getFieldReference(string $tableName, string $fieldName): ?MetaClass
+//    {
+//        if(!isset($this->fieldReference[$tableName]) || !isset($this->fieldReference[$tableName][$fieldName])) {
+//            return null;
+//        }
+//        return $this->fieldReference[$tableName][$fieldName];
+//    }
 
-    /**
-     * @param string $fieldName
-     * @param MetaClass $metaClass
-     * @return $this
-     */
-    public function addFieldReference(string $fieldName, MetaClass $metaClass, bool $oneToOne)
-    {
-        $this->uses[$metaClass->getNamespace()] = true;
-        $this->fieldReference[$metaClass->getName()] = [
-            'local_col' => $fieldName,
-            'metaClass' => $metaClass,
-            'relationshipt' => $oneToOne ? 'hasOne' : 'hasMany'
-            ];
-        return $this;
-    }
-    public function addPivotedFieldReference(MetaClass $metaClass, MetaClass $pivotMetaClass,$myFieldName,$otherFieldName ,$myRefFieldName, $otherRefFieldName)
-    {
-        $this->uses[$metaClass->getNamespace()] = true;
-        $this->fieldReference[$metaClass->getName()] = [
-            'metaClass' => $metaClass,
-            'pivot_table' => $pivotMetaClass->getTableName(),
-            'local_col' => $myFieldName,
-            'other_col' => $otherFieldName,
-            'foreign_col' => $myRefFieldName,
-            'other_pivot_col' => $otherRefFieldName,
-            'relationshipt' =>  'belongsToMany'
-            ];
-
-        //belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null, $parentKey = null, $relatedKey = null
-        //$this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id')->using('App\UserRole');;
-        return $this;
-    }
+//    /**
+//     * @param string $fieldName
+//     * @param MetaClass $metaClass
+//     * @return $this
+//     */
+//    public function addFieldReference(string $fieldName, MetaClass $metaClass, bool $oneToOne)
+//    {
+//        $this->uses[$metaClass->getNamespace()] = true;
+//        $this->fieldReference[$metaClass->getName()] = [
+//            'local_col' => $fieldName,
+//            'metaClass' => $metaClass,
+//            'relationshipt' => $oneToOne ? 'hasOne' : 'hasMany'
+//            ];
+//        return $this;
+//    }
+//    public function addPivotedFieldReference(MetaClass $metaClass, MetaClass $pivotMetaClass,$myFieldName,$otherFieldName ,$myRefFieldName, $otherRefFieldName)
+//    {
+//        $this->uses[$metaClass->getNamespace()] = true;
+//        $this->fieldReference[$metaClass->getName()] = [
+//            'metaClass' => $metaClass,
+//            'pivot_table' => $pivotMetaClass->getTableName(),
+//            'local_col' => $myFieldName,
+//            'other_col' => $otherFieldName,
+//            'foreign_col' => $myRefFieldName,
+//            'other_pivot_col' => $otherRefFieldName,
+//            'relationshipt' =>  'belongsToMany'
+//            ];
+//
+//        //belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null, $parentKey = null, $relatedKey = null
+//        //$this->belongsToMany('App\Role', 'role_user', 'user_id', 'role_id')->using('App\UserRole');;
+//        return $this;
+//    }
 
     private function getRelationShips()
     {
         $relations = [];
         foreach ($this->getFields() as $field) {
-            if($field->isForeingKey()) {
-                $fk = $field->getForeignKeyConstraint();
-                $relations[$field->getFieldName()] = [
-                    'rel' => 'belongsTo',
-                    'model' => $field->getForeignKeyMetaClass()->getClassName(),
-                    'local_col' => $field->getFieldName(),
-                    'foreign_col' => $fk->getForeignColumns()[0]
-                ];
+            $relDef = $field->getRelationshipDefinition();
+            if($relDef) {
+                $relations = array_merge($relations, $relDef);
             }
         }
 
-        foreach ($this->fieldReference as $metaClassName => $relationship) {
-            /** @var MetaClass $metaClass */
-            $metaClass = $relationship['metaClass'];
-            $relations[$metaClass->getTableName()] = [
-                'rel' => $relationship['relationshipt'],
-                'model' => $metaClass->getClassName(),
-                'local_col' => 'id',
-                'foreign_col' => $relationship['local_col']
-            ];
-        }
+//        foreach ($this->fieldReference as $metaClassName => $relationship) {
+//            /** @var MetaClass $metaClass */
+//            $metaClass = $relationship['metaClass'];
+//            $relations[$metaClass->getTableName()] = [
+//                'rel' => $relationship['relationshipt'],
+//                'model' => $metaClass->getClassName(),
+//                'local_col' => 'id',
+//                'foreign_col' => $relationship['local_col']
+//            ];
+//        }
         return $relations;
     }
 
