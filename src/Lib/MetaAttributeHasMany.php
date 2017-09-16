@@ -16,11 +16,11 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
     {
         return [
 //            $this->getRelationshipName($this->getRelatedFieldName()) => [
-            $this->fk->getName() => [
+            $this->getRelatedForignKeyConstraint()->getName() => [
                 'rel' => 'hasMany',
                 'model' => $this->getRelatedModelName(),
                 'local_col' => $this->getFieldName(),
-                'foreign_col' => $this->getRelatedFieldName()
+                'foreign_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0]
             ]
         ];
     }
@@ -52,7 +52,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
 
     protected function getRelationshipName($fieldName)
     {
-        return Str::plural(parent::getRelationshipName($this->fk->getName()));
+        return Str::plural(parent::getRelationshipName($this->getRelatedForignKeyConstraint()->getName()));
     }
 
 }
