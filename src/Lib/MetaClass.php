@@ -209,10 +209,15 @@ class MetaClass
             if(!in_array($metaAttribute->getPhpAttributeName(), self::IGNORE_ATTRIBUTES)) {
                 $get = $metaAttribute->getGetMethodData();
                 $set = $metaAttribute->getSetMethodData();
-                $longest = strlen($get['type']) > $longest ? strlen($get['type']) : $longest;
-                $longest = strlen($set['type']) > $longest ? strlen($set['type']) : $longest;
-                $properties[] = $set;
-                $properties[] = $get;
+                if($set) {
+                    $longest = strlen($set['type']) > $longest ? strlen($set['type']) : $longest;
+                    $properties[] = $set;
+                }
+
+                if($get) {
+                    $longest = strlen($get['type']) > $longest ? strlen($get['type']) : $longest;
+                    $properties[] = $get;
+                }
             }
         }
         $phpDoc = [];

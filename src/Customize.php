@@ -10,6 +10,7 @@ namespace CST21;
 
 use CST21\Lib\MetaAttribute;
 use CST21\Lib\MetaAttributeBelongsTo;
+use CST21\Lib\MetaAttributeHasMany;
 use CST21\Lib\MetaAttributeHasOne;
 use CST21\Lib\MetaClass;
 use Illuminate\Database\MySqlConnection;
@@ -85,6 +86,8 @@ class Customize
                         if(in_array($fieldName, $uniqueFields)) {
                             //hasOne!
                             $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasOne($refericiedCol, $metaClass, $fk, $fieldName);
+                        } else {
+                            $this->referenciedTables[$fk->getForeignTableName()][] = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk, $fieldName);
                         }
                     }
                 }

@@ -70,15 +70,10 @@ class MetaAttributeHasOne extends MetaAttribute
         return parent::getRelationshipName($this->fk->getName());
     }
 
-//    public function getSetMethodData()
-//    {
-//        $args = $this->getRelatedModelName(). ' $'.$this->getRelatedModelName();// $this->getPhpFieldType().' $'.$this->getPhpAttributeName();
-//        if(!$this->getDoctrineColunm()->getNotnull()) {
-//            $args .= ' = null';
-//        }
-//        $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE).'('.$args.')';
-//        return ['type' => '$this', 'signature' => $signature, 'nullable' => $this->getDoctrineColunm()->getNotnull()];
-//    }
+    public function getSetMethodData()
+    {
+        return [];
+    }
 
     protected function getPhpFieldType()
     {

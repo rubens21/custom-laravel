@@ -101,7 +101,7 @@ class MetaAttribute
         return studly_case($fieldName);
     }
 
-    private function getMethodModePrefix($mode)
+    protected function getMethodModePrefix($mode)
     {
         if($mode === self::METHOD_GET_MODE) {
             if($this->getPhpFieldType() === 'bool') {
@@ -111,12 +111,10 @@ class MetaAttribute
         } else {
             return 'set';
         }
-
-
     }
 
 
-    private function transCastMysqlToPhp($type)
+    protected function transCastMysqlToPhp($type)
     {
         $type = strtolower(str_replace(['(', ')'], '', $type));
         switch ($type) {
