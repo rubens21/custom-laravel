@@ -52,8 +52,6 @@ class Customize
 
     public function map()
     {
-
-
         $this->connection
             ->getDoctrineConnection()
             ->getDatabasePlatform()
@@ -62,7 +60,16 @@ class Customize
         $tables = array_diff($this->connection->getDoctrineSchemaManager()->listTableNames(), $this->ignoreTableList);
         $this->mapTables($tables);
         $this->mapFields($tables);
-//        $this->identifyRelationships();
+    }
+
+    public function saveFiles($defaultNSDir)
+    {
+        foreach ($this->getClasses() as $metaClass){
+            $relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$metaClass->getRelativeFilePath();
+            $this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
+            echo $relativeFilePath."\n";
+            file_put_contents($relativeFilePath, $metaClass->generateCode());
+        }
     }
 
     private function mapTables(array $tables)
@@ -90,7 +97,6 @@ class Customize
                     $colunm = $this->tables[$tableName]->getColumn($fieldName);
                     $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
                     //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
-                    //e um hasMany ou HasOne na outr tabela
                     $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
                     $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
@@ -117,8 +123,6 @@ class Customize
      */
     protected function getTablesComment()
     {
-        //SELECT TABLE_COMMENT FROM information_schema.TABLES
-        //show table status where name='table_name';
         $comments = [];
         foreach ($this->connection->getPdo()->query('SHOW TABLE STATUS')->fetchAll() as $tableStatus){
             $comments[$tableStatus['Name']] = $tableStatus['Comment'];
@@ -146,10 +150,18 @@ class Customize
                 $fields[] = $index->getColumns()[0];
             }
         }
-//        if(count($fields) > 1) {
-//            dd($fields);
-//        }
         return $fields;
+    }
+
+    private function createDirIfNotExist($pathinfo)
+    {
+        if (is_dir($pathinfo)) {
+            return true;
+        } elseif ($this->createDirIfNotExist(dirname($pathinfo))) {
+            return mkdir($pathinfo);
+        } else {
+            return false;
+        }
     }
 
 }

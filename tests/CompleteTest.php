@@ -18,10 +18,11 @@ class CompleteTest extends TestCase
     {
         $Cust = new Customize($this->getConnection());
         $Cust->map();
-        foreach ($Cust->getClasses() as $metaClass){
-            echo $metaClass->generateCode();
-            echo "\n\n";
-        }
+        $Cust->saveFiles(__DIR__.'/sample');
+//        foreach ($Cust->getClasses() as $metaClass){
+//            echo $metaClass->();
+//            echo "\n\n";
+//        }
     }
 
 }

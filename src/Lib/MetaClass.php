@@ -100,6 +100,12 @@ class MetaClass
         return $template;
     }
 
+    public function getRelativeFilePath($removeDefaultNamespace = true)
+    {
+        $namesapeceLevels = $removeDefaultNamespace ? array_slice($this->getFullClassNameLevels(), 1) : $this->getFullClassNameLevels();
+        return implode(DIRECTORY_SEPARATOR,$namesapeceLevels).'.php';
+    }
+
     /**
      * @return array
      */
@@ -239,7 +245,7 @@ class MetaClass
         }
         $phpDoc = [];
         foreach ($properties as $property){
-            $phpDoc[] = " * @method ".str_pad($property['type'],$longest, ' ').' '.$property['signature'];
+            $phpDoc[] = " * @method ".str_pad($property['type'],$longest, ' ').' '.$property['name'].'('.$property['args'].')';
         }
 
         return implode("\n", $phpDoc);
@@ -293,6 +299,7 @@ class MetaClass
 
     private function getRelationShips()
     {
+        //@todo da pra melhorar isso mescaldno no ooutro metodo
         $relations = [];
         foreach ($this->getFields() as $field) {
             $relDef = $field->getRelationshipDefinition();
@@ -300,25 +307,57 @@ class MetaClass
                 $relations = array_merge($relations, $relDef);
             }
         }
-
-//        foreach ($this->fieldReference as $metaClassName => $relationship) {
-//            /** @var MetaClass $metaClass */
-//            $metaClass = $relationship['metaClass'];
-//            $relations[$metaClass->getTableName()] = [
-//                'rel' => $relationship['relationshipt'],
-//                'model' => $metaClass->getClassName(),
-//                'local_col' => 'id',
-//                'foreign_col' => $relationship['local_col']
-//            ];
-//        }
         return $relations;
     }
+    private function getMethods()
+    {
+        $methods = [];
+        $setters = [];
+        $getters = [];
+
+        foreach ($this->getFields() as $fieldName => $metaAttribute) {
+            if(!in_array($metaAttribute->getPhpAttributeName(), self::IGNORE_ATTRIBUTES)) {
+                $get = $metaAttribute->getGetMethodData();
+                $set = $metaAttribute->getSetMethodData();
+
+                echo get_class($metaAttribute)." ==== ".MetaAttribute::class."\n";
+                if(get_class($metaAttribute) === MetaAttribute::class) {
+                    if($set) {
+                        $setters[$set['name']] = $set['return'];
+                    }
+
+                    if($get) {
+                        $getters[$get['name']] = $get['return'];
+                    }
+                } else {
+                    if($set) {
+                        $methods[$set['name']] = $set['return'];
+                    }
+
+                    if($get) {
+                        $methods[$get['name']] = $get['return'];
+                    }
+                }
+            }
+        }
+
+        return [
+            'methods' => $methods,
+            'setters' => $setters,
+            'getters' => $getters,
+        ];
+    }
+
 
     private function getBodyAttributes()
     {
-        $relationshipd = $this->getRelationShips();
+        $atts = $this->getMethods();
+        $attributes[] = 'protected $__relationships = '.var_export($this->getRelationShips(), true).';';
 
-        return 'private $__relationships = '.var_export($relationshipd, true);
+        $attributes[] = 'protected $__methods = '.var_export($atts['methods'], true).';';
+        $attributes[] = 'protected $__attSet = '.var_export($atts['setters'], true).';';
+        $attributes[] = 'protected $__attGet = '.var_export($atts['getters'], true).';';
+        return implode("\n", $attributes);
 
 
     }
@@ -346,6 +385,8 @@ class MetaClass
 //        }
         return implode("\n", $classes);
     }
+
+
 
 
 }

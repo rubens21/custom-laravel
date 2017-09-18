@@ -70,19 +70,31 @@ class MetaAttribute
         if(!$this->column->getNotnull()) {
             $args .= ' = null';
         }
-        $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE).'('.$args.')';
-        return ['type' => '$this', 'signature' => $signature, 'nullable' => $this->column->getNotnull()];
+        $name = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE);
+        return [
+            'type' => '$this',
+            'name' => $name,
+            'args' => $args,
+            'return' => $this->getFieldName(),
+            'nullable' => $this->column->getNotnull()
+        ];
     }
 
 
     public function getGetMethodData()
     {
-        $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_GET_MODE).'()';
+        $name = $this->transAttToMethod($this->getFieldName(), self::METHOD_GET_MODE);
         $returnType = $this->getPhpFieldType();
         if(!$this->column->getNotnull()) {
             $returnType .= '|null';
         }
-        return ['type' => $returnType, 'signature' => $signature, 'nullable' => $this->column->getNotnull()];
+        return [
+            'type' => $returnType,
+            'name' => $name,
+            'args' => null,
+            'return' => $this->getFieldName(),
+            'nullable' => $this->column->getNotnull()
+        ];
     }
 
     /**

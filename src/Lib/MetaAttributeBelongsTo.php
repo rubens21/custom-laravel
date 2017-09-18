@@ -58,6 +58,8 @@ class MetaAttributeBelongsTo extends MetaAttribute
 
     protected function getRelationshipName($fieldName)
     {
+
+        //@todo se essa substituição fosse baseada em regex daria para permitir personalização
         return parent::getRelationshipName(str_replace('fk_', '', $fieldName));
     }
 
