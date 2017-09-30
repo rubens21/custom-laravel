@@ -105,6 +105,15 @@ abstract class BaseModel extends Model
 			return $this;
 		} elseif(isset(static::$__attGet[$method])) {
             return $this->{static::$__attGet[$method]};
+		} elseif(isset(static::$__relationships[$method])) {
+            $data = static::$__relationships[$method];
+			switch ($data['rel']) {
+                case 'belongsTo':
+                    return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col']);
+                    break;
+                default:
+                    throw new \Exception('Invalid relationship setted');
+            }
 		} else {
             return parent::__call($method, $parameters);
         }
@@ -116,7 +125,7 @@ abstract class BaseModel extends Model
 			$data = static::$__relationships[$key];
             switch ($data['rel']) {
                 case 'belongsTo':
-                    return $this->{$data['rel']}($data['model'], $data['foreign_col'])->first();
+                    return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col'])->first();
                     break;
                 default:
                     throw new \Exception('Invalid relationship setted');
