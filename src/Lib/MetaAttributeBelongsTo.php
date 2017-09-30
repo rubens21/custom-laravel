@@ -86,7 +86,7 @@ class MetaAttributeBelongsTo extends MetaAttribute
     public function getRelationshipDefinition():?array
     {
         return [
-            $this->getForeignKeyConstraint()->getForeignTableName() => [
+            $this->getRelationshipName($this->getFieldName()) => [
                 'rel' => 'belongsTo',
                 'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),
@@ -97,14 +97,14 @@ class MetaAttributeBelongsTo extends MetaAttribute
     public function getSetMethodData()
     {
         $data = parent::getSetMethodData();
-        $data['target'] = $this->getForeignKeyConstraint()->getForeignTableName();
+        $data['target'] = $this->getRelationshipName($this->getFieldName());
         return $data;
     }
 
     public function getGetMethodData()
     {
         $data = parent::getGetMethodData();
-        $data['target'] = $this->getForeignKeyConstraint()->getForeignTableName();
+        $data['target'] = $this->getRelationshipName($this->getFieldName());
         return $data;
     }
 
