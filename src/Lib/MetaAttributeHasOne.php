@@ -66,6 +66,13 @@ class MetaAttributeHasOne extends MetaAttribute
         return [];
     }
 
+    public function getGetMethodData()
+    {
+        $data = parent::getGetMethodData();
+        $data['target'] = $this->getRelatedForignKeyConstraint()->getName();
+        return $data;
+    }
+
     protected function getPhpFieldType()
     {
         return $this->getRelatedModelName();
@@ -82,7 +89,7 @@ class MetaAttributeHasOne extends MetaAttribute
 //            $this->getRelationshipName($this->getRelatedFieldName()) => [
             $this->getRelatedForignKeyConstraint()->getName() => [
                 'rel' => 'hasOne',
-                'model' => $this->getRelatedModelName(),
+                'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),
                 'foreign_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0]
             ]

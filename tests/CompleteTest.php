@@ -22,9 +22,9 @@ class CompleteTest extends TestCase
         $Cust = new Customize($this->getConnection());
         $Cust->map();
         $Cust->saveFiles(__DIR__.'/sample');
-        require (__DIR__.'/../src/Shareables/BaseModel.php');
-        require (__DIR__.'/sample/Posts/Tag.php');
-        require (__DIR__.'/sample/Author.php');
+        include_once  (__DIR__.'/../src/Shareables/BaseModel.php');
+        include_once (__DIR__.'/sample/Posts/Tag.php');
+        include_once (__DIR__.'/sample/Author.php');
     }
     public function testBelongsTo()
     {
@@ -46,6 +46,30 @@ class CompleteTest extends TestCase
 
         $this->assertInstanceof(Author::class,$revisor);
         $this->assertEquals($professorId,$revisor->getId());
+    }
+
+
+    public function testHasOne()
+    {
+        $professor = new Author();
+        $professor->setName('Revisor '.rand(0, 9999));
+        $professor->setType('beginner');
+        $this->assertTrue($professor->save());
+        $professorId = $professor->getId();
+
+        $aluno = new Author();
+        $aluno->setName('Revisado'.rand(0, 9999));
+        $aluno->setType('beginner');
+        $aluno->setRevisor($professor);
+        $this->assertTrue($aluno->save());
+        $alunoId = $aluno->getId();
+
+        $professorRefreshed = Author::find($professorId);
+        $dependente = $professorRefreshed->getDependent();
+
+        $this->assertInstanceof(Author::class,$professorRefreshed);
+        $this->assertEquals($alunoId,$dependente->getId());
+        echo $dependente->getName();
     }
 
 }

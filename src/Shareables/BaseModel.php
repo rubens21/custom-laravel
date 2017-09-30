@@ -111,8 +111,11 @@ abstract class BaseModel extends Model
                 case 'belongsTo':
                     return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col']);
                     break;
+                case 'hasOne':
+                    return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col']);
+                    break;
                 default:
-                    throw new \Exception('Invalid relationship setted');
+                    throw new \Exception('Invalid relationship setted: '.$data['rel']);
             }
 		} else {
             return parent::__call($method, $parameters);
@@ -126,6 +129,9 @@ abstract class BaseModel extends Model
             switch ($data['rel']) {
                 case 'belongsTo':
                     return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col'])->first();
+                    break;
+                case 'hasOne':
+                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col'])->first();
                     break;
                 default:
                     throw new \Exception('Invalid relationship setted');
