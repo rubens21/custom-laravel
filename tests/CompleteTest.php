@@ -21,38 +21,28 @@ class CompleteTest extends TestCase
         $Cust = new Customize($this->getConnection());
         $Cust->map();
         $Cust->saveFiles(__DIR__.'/sample');
-//        foreach ($Cust->getClasses() as $metaClass){
-//            echo $metaClass->();
-//            echo "\n\n";
-//        }
-    }
-    public function testSimpleAttributes()
-    {
         require (__DIR__.'/../src/Shareables/BaseModel.php');
         require (__DIR__.'/sample/Posts/Tag.php');
         require (__DIR__.'/sample/Author.php');
-
-//        $label = "my-nice-tag-".rand(0, 99);
-//        $tag = new Tag();
-//        $tag->setLabel($label);
-//        $this->assertTrue($tag->save());
+    }
+    public function testBelongsTo()
+    {
+//        $professor = new Author();
+//        $professor->setName('Revisor '.rand(0, 9999));
+//        $professor->setType('beginner');
+//        $this->assertTrue($professor->save());
 //
-//        $tag2 = Tag::where(['label' => $label])->first();
-//        $this->assertEquals($label, $tag2->getLabel());
+//        $aluno = new Author();
+//        $aluno->setName('Revisado '.rand(0, 9999));
+//        $aluno->setType('beginner');
+//        $aluno->setRevisor($professor);
+//        $this->assertTrue($aluno->save());
+//        $alunoId = $aluno->getId();
 
-        $professor = new Author();
-        $professor->setName('Revisor '.rand(0, 9999));
-        $professor->setType('beginner');
-        $this->assertTrue($professor->save());
+        $alunoRefreshed = Author::find(19);
+        $revisor = $alunoRefreshed->getRevisor();
 
-        //parou quando ia fazer o metodo set para o belongs to
-        //$this->user()->associate($user);
-
-        $aluno = new Author();
-        $aluno->setName('Revisado '.rand(0, 9999));
-        $aluno->setType('beginner');
-        $aluno->setRevisor($professor);
-        $this->assertTrue($aluno->save());
+        $this->assertInstanceof(Author::class,$revisor);
     }
 
 }
