@@ -75,7 +75,7 @@ class MetaAttribute
             'type' => '$this',
             'name' => $name,
             'args' => $args,
-            'return' => $this->getFieldName(),
+            'target' => $this->getFieldName(),
             'nullable' => $this->column->getNotnull()
         ];
     }
@@ -92,7 +92,7 @@ class MetaAttribute
             'type' => $returnType,
             'name' => $name,
             'args' => null,
-            'return' => $this->getFieldName(),
+            'target' => $this->getFieldName(),
             'nullable' => $this->column->getNotnull()
         ];
     }

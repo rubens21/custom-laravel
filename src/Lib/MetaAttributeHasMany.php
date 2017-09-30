@@ -33,6 +33,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
             $returnType .= '|null';
         }
         $data['type'] = $returnType;
+        $data['target'] = $this->getRelatedForignKeyConstraint()->getName();
         return $data;
     }
 

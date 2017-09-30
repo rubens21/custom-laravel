@@ -88,11 +88,24 @@ class MetaAttributeBelongsTo extends MetaAttribute
         return [
             $this->getForeignKeyConstraint()->getForeignTableName() => [
                 'rel' => 'belongsTo',
-                'model' => $this->getRelatedModelName(),
+                'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),
                 'foreign_col' => $this->getForeignKeyConstraint()->getForeignColumns()[0]
             ]
         ];
+    }
+    public function getSetMethodData()
+    {
+        $data = parent::getSetMethodData();
+        $data['target'] = $this->getForeignKeyConstraint()->getForeignTableName();
+        return $data;
+    }
+
+    public function getGetMethodData()
+    {
+        $data = parent::getGetMethodData();
+        $data['target'] = $this->getForeignKeyConstraint()->getForeignTableName();
+        return $data;
     }
 
     public function getRelatedModelName()

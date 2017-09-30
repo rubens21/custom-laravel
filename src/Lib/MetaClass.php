@@ -311,7 +311,6 @@ class MetaClass
     }
     private function getMethods()
     {
-        $methods = [];
         $setters = [];
         $getters = [];
 
@@ -321,28 +320,17 @@ class MetaClass
                 $set = $metaAttribute->getSetMethodData();
 
                 echo get_class($metaAttribute)." ==== ".MetaAttribute::class."\n";
-                if(get_class($metaAttribute) === MetaAttribute::class) {
-                    if($set) {
-                        $setters[$set['name']] = $set['return'];
-                    }
+                if($set) {
+                    $setters[$set['name']] = $set['target'];
+                }
 
-                    if($get) {
-                        $getters[$get['name']] = $get['return'];
-                    }
-                } else {
-                    if($set) {
-                        $methods[$set['name']] = $set['return'];
-                    }
-
-                    if($get) {
-                        $methods[$get['name']] = $get['return'];
-                    }
+                if($get) {
+                    $getters[$get['name']] = $get['target'];
                 }
             }
         }
 
         return [
-            'methods' => $methods,
             'setters' => $setters,
             'getters' => $getters,
         ];
@@ -352,11 +340,9 @@ class MetaClass
     private function getBodyAttributes()
     {
         $atts = $this->getMethods();
-        $attributes[] = 'protected $__relationships = '.var_export($this->getRelationShips(), true).';';
-
-        $attributes[] = 'protected $__methods = '.var_export($atts['methods'], true).';';
-        $attributes[] = 'protected $__attSet = '.var_export($atts['setters'], true).';';
-        $attributes[] = 'protected $__attGet = '.var_export($atts['getters'], true).';';
+        $attributes[] = 'protected static $__relationships = '.var_export($this->getRelationShips(), true).';';
+        $attributes[] = 'protected static $__attSet = '.var_export($atts['setters'], true).';';
+        $attributes[] = 'protected static $__attGet = '.var_export($atts['getters'], true).';';
         return implode("\n", $attributes);
 
 
@@ -370,7 +356,9 @@ class MetaClass
         }
         $classes = [];
         foreach (array_unique($imports) as $class) {
-            $classes[] = 'use '.$class.';';
+            if($class !== $this->getFullClassName()) {
+                $classes[] = 'use '.$class.';';
+            }
         }
 
 //        foreach ($this->fieldReference as $metaClassName => $relationship) {

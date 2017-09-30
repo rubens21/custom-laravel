@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests;
+use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\MySqlConnection;
 use PDO;
 use PDOException;
@@ -16,8 +17,23 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
         try {
-            $pdo = new PDO('mysql:dbname='.env('DB_NAME').';host='.env('DB_HOST'), env('DB_USER'), env('DB_PASS'));
-            $this->db = new MySqlConnection($pdo, env('DB_USER'), env('DB_PASS'));
+//            $pdo = new PDO('mysql:dbname='.env('DB_NAME').';host='.env('DB_HOST'), env('DB_USER'), env('DB_PASS'));
+//            $this->db = new MySqlConnection($pdo, env('DB_USER'), env('DB_PASS'));
+
+            $capsule = new Manager;
+            $capsule->addConnection([
+     'driver' => 'mysql',
+     'host' => env('DB_HOST'),
+     'database' => env('DB_NAME'),
+     'username' => env('DB_USER'),
+     'password' => env('DB_PASS'),
+//     'charset' => 'utf8',
+//     'collation' => 'utf8_unicode_ci',
+//     'prefix' => '',
+    ]);
+    // Setup the Eloquent ORM…
+    $capsule->bootEloquent();
+            $this->db = $capsule->getConnection();
         } catch (PDOException $e) {
             echo 'Connection failed: ' . $e->getMessage();
         }
