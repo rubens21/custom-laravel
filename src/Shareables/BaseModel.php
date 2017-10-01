@@ -112,7 +112,10 @@ abstract class BaseModel extends Model
                     return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col']);
                     break;
                 case 'hasOne':
-                    return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col']);
+                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col']);
+                    break;
+                case 'hasMany':
+                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col']);
                     break;
                 default:
                     throw new \Exception('Invalid relationship setted: '.$data['rel']);
@@ -132,6 +135,9 @@ abstract class BaseModel extends Model
                     break;
                 case 'hasOne':
                     return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col'])->first();
+                    break;
+                case 'hasMany':
+                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col'])->get();
                     break;
                 default:
                     throw new \Exception('Invalid relationship setted');

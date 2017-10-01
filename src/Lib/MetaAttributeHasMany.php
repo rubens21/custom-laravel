@@ -18,7 +18,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
 //            $this->getRelationshipName($this->getRelatedFieldName()) => [
             $this->getRelatedForignKeyConstraint()->getName() => [
                 'rel' => 'hasMany',
-                'model' => $this->getRelatedModelName(),
+                'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),
                 'foreign_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0]
             ]
