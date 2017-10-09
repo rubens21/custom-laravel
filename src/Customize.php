@@ -67,7 +67,6 @@ class Customize
         foreach ($this->getClasses() as $metaClass){
             $relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$metaClass->getRelativeFilePath();
             $this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
-            echo $relativeFilePath."\n";
             file_put_contents($relativeFilePath, $metaClass->generateCode());
         }
     }
@@ -91,19 +90,30 @@ class Customize
             $metaClass = $this->classMap[$tableName];
             $uniqueFields = $this->getUniqueFields($tableName);
             $specializedField = [];
+            echo "\n=============\n TABLE ";
+            echo $tableName."\n";
             foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
+
                 foreach ($fk->getLocalColumns() as $fieldName) {
                     $specializedField[] = $fieldName;
+                    echo "\n------------------\n";
+                    echo "Coluna: $fieldName\n";
+                    echo "Tablea ref: ".$fk->getForeignTableName()."\n";
                     $colunm = $this->tables[$tableName]->getColumn($fieldName);
                     $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
+                    echo "Classe ref: ".$referenciedMetaClass->getClassName()."\n";
                     //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
                     $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
                     $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
+
+
                     if(in_array($fieldName, $uniqueFields)) {
                         //hasOne!
                         $referenciedMetaClass->addField(new MetaAttributeHasOne($refericiedCol, $metaClass, $fk));
                     } else {
+                        echo "Class ".$referenciedMetaClass->getClassName()." na col ".$refericiedCol->getName()." aponta ara ".$metaClass->getClassName()."\n";
+                        echo $fk->getName();
                         $referenciedMetaClass->addField(new MetaAttributeHasMany($refericiedCol, $metaClass, $fk));
                     }
                 }

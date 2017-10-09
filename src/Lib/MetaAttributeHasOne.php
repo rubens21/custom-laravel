@@ -24,8 +24,11 @@ class MetaAttributeHasOne extends MetaAttribute
      */
     private $relatedForignKeyConstraint;
 
-    public function __construct(Column $column, MetaClass $relatedClass, ForeignKeyConstraint $relatedForignKeyConstraint)
-    {
+    public function __construct(
+        Column $column,
+        MetaClass $relatedClass,
+        ForeignKeyConstraint $relatedForignKeyConstraint
+    ) {
         parent::__construct($column);
         $this->setRelatedClass($relatedClass);
         $this->relatedForignKeyConstraint = $relatedForignKeyConstraint;
@@ -56,6 +59,7 @@ class MetaAttributeHasOne extends MetaAttribute
     {
         $this->relatedClass = $relatedClass;
     }
+
     protected function getRelationshipName($fieldName)
     {
         return parent::getRelationshipName($this->getRelatedForignKeyConstraint()->getName());
@@ -69,7 +73,7 @@ class MetaAttributeHasOne extends MetaAttribute
     public function getGetMethodData()
     {
         $data = parent::getGetMethodData();
-        $data['target'] = $this->getRelatedForignKeyConstraint()->getName();
+        $data['target'] = $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName());
         return $data;
     }
 
@@ -86,8 +90,7 @@ class MetaAttributeHasOne extends MetaAttribute
     public function getRelationshipDefinition():?array
     {
         return [
-//            $this->getRelationshipName($this->getRelatedFieldName()) => [
-            $this->getRelatedForignKeyConstraint()->getName() => [
+            $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName()) => [
                 'rel' => 'hasOne',
                 'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),

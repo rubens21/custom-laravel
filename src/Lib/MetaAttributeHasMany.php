@@ -16,7 +16,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
     {
         return [
 //            $this->getRelationshipName($this->getRelatedFieldName()) => [
-            $this->getRelatedForignKeyConstraint()->getName() => [
+                $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName()) => [
                 'rel' => 'hasMany',
                 'model' => $this->getRelatedClass()->getFullClassName(),
                 'local_col' => $this->getFieldName(),
@@ -33,7 +33,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
             $returnType .= '|null';
         }
         $data['type'] = $returnType;
-        $data['target'] = $this->getRelatedForignKeyConstraint()->getName();
+        $data['target'] = $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName());
         return $data;
     }
 

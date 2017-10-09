@@ -18,16 +18,23 @@ use CST21\Customize;
 
 class CompleteTest extends TestCase
 {
+
+    private static $wasSettedUp = false;
+
     public function setup()
     {
         parent::setup();
-        $Cust = new Customize($this->getConnection());
-        $Cust->map();
-        $Cust->saveFiles(__DIR__.'/sample');
-        include_once  (__DIR__.'/../src/Shareables/BaseModel.php');
-        include_once (__DIR__.'/sample/Posts/Tag.php');
-        include_once (__DIR__.'/sample/Posts/Post.php');
-        include_once (__DIR__.'/sample/Author.php');
+        if(!self::$wasSettedUp) {
+            self::$wasSettedUp = true;
+            $Cust = new Customize($this->getConnection());
+            $Cust->map();
+            $Cust->saveFiles(__DIR__.'/sample');
+            include_once  (__DIR__.'/../src/Shareables/BaseModel.php');
+            include_once (__DIR__.'/sample/Posts/Tag.php');
+            include_once (__DIR__.'/sample/Posts/Post.php');
+            include_once (__DIR__.'/sample/Author.php');
+        }
+
     }
     public function testBelongsTo()
     {

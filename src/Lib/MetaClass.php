@@ -178,7 +178,7 @@ class MetaClass
         return ($meta && isset($meta['pivot']));
     }
 
-    public function getPivotedTalbes():array
+    public function getPivotedTables():array
     {
         return preg_split('/\|/',$this->getMetaData()['pivot']);
     }
@@ -319,7 +319,6 @@ class MetaClass
                 $get = $metaAttribute->getGetMethodData();
                 $set = $metaAttribute->getSetMethodData();
 
-                echo get_class($metaAttribute)." ==== ".MetaAttribute::class."\n";
                 if($set) {
                     $setters[$set['name']] = $set['target'];
                 }

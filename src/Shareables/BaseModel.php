@@ -99,7 +99,6 @@ abstract class BaseModel extends Model
      */
     public function __call($method, $parameters)
     {
-        echo "\nCahmou $method\n";
 		if(isset(static::$__attSet[$method])) {
 			$this->{static::$__attSet[$method]} = $parameters[0];
 			return $this;
