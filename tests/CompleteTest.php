@@ -79,7 +79,6 @@ class CompleteTest extends TestCase
 
         $this->assertInstanceof(Author::class,$professorRefreshed);
         $this->assertEquals($alunoId,$dependente->getId(), 'Get testHasOne failed');
-        echo $dependente->getName();
     }
 
     public function testHasMany()

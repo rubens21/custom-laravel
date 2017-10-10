@@ -174,7 +174,6 @@ class MetaClass
     public function isAPivot():?bool
     {
         $meta = $this->getMetaData();
-        var_dump($meta);
         return ($meta && isset($meta['pivot']));
     }
 

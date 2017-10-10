@@ -92,19 +92,10 @@ class Customize
             $metaClass = $this->classMap[$tableName];
             $uniqueFields = $this->getUniqueFields($tableName);
             $specializedField = [];
-            echo "\n=============\n TABLE ";
-            echo $tableName."\n";
             foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
-
                 foreach ($fk->getLocalColumns() as $fieldName) {
                     $specializedField[] = $fieldName;
-                    echo "\n------------------\n";
-                    echo "Coluna: $fieldName\n";
-                    echo "Tablea ref: ".$fk->getForeignTableName()."\n";
-                    $colunm = $this->tables[$tableName]->getColumn($fieldName);
                     $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
-                    echo "Classe ref: ".$referenciedMetaClass->getClassName()."\n";
-                    //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
 
                     $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
@@ -118,7 +109,7 @@ class Customize
                         $metaAttribute = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk);
                     }
 
-                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
+                    $metaClass->addField(new MetaAttributeBelongsTo($this->tables[$tableName]->getColumn($fieldName), $referenciedMetaClass, $fk));
                     $referenciedMetaClass->addField($metaAttribute);
                 }
             }
