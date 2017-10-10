@@ -133,14 +133,10 @@ abstract class BaseModel extends Model
 			$data = static::$__relationships[$key];
             switch ($data['rel']) {
                 case 'belongsTo':
-                    return $this->{$data['rel']}($data['model'], $data['local_col'], $data['foreign_col'])->first();
-                    break;
                 case 'hasOne':
-                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col'])->first();
+                    return $this->{$key}()->first();
                     break;
                 case 'hasMany':
-                    return $this->{$data['rel']}($data['model'], $data['foreign_col'], $data['local_col'])->get();
-                    break;
                 case 'belongsToMany':
                     return $this->{$key}()->get();
                     break;
