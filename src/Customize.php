@@ -10,9 +10,11 @@ namespace CST21;
 
 use CST21\Lib\MetaAttribute;
 use CST21\Lib\MetaAttributeBelongsTo;
+use CST21\Lib\MetaAttributeBelongsToMany;
 use CST21\Lib\MetaAttributeHasMany;
 use CST21\Lib\MetaAttributeHasOne;
 use CST21\Lib\MetaClass;
+use CST21\Lib\MetaPivot;
 use Illuminate\Database\MySqlConnection;
 
 class Customize
@@ -103,19 +105,21 @@ class Customize
                     $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
                     echo "Classe ref: ".$referenciedMetaClass->getClassName()."\n";
                     //checar aqui se é um pivot, pois nesse caso será preciso add um meta attributo nas tabelas vizinhas
-                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
+
                     $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
 
-
-                    if(in_array($fieldName, $uniqueFields)) {
-                        //hasOne!
-                        $referenciedMetaClass->addField(new MetaAttributeHasOne($refericiedCol, $metaClass, $fk));
+                    if($metaClass->isAPivot()) {
+                        $metaPivot = $this->getMetaPivot($tableName);
+                        $metaAttribute = new MetaAttributeBelongsToMany($refericiedCol, $metaPivot, $metaPivot->getIndex($referenciedMetaClass));
+                    } elseif(in_array($fieldName, $uniqueFields)) {
+                        $metaAttribute = new MetaAttributeHasOne($refericiedCol, $metaClass, $fk);
                     } else {
-                        echo "Class ".$referenciedMetaClass->getClassName()." na col ".$refericiedCol->getName()." aponta ara ".$metaClass->getClassName()."\n";
-                        echo $fk->getName();
-                        $referenciedMetaClass->addField(new MetaAttributeHasMany($refericiedCol, $metaClass, $fk));
+                        $metaAttribute = new MetaAttributeHasMany($refericiedCol, $metaClass, $fk);
                     }
+
+                    $metaClass->addField(new MetaAttributeBelongsTo($colunm, $referenciedMetaClass, $fk));
+                    $referenciedMetaClass->addField($metaAttribute);
                 }
             }
 
@@ -172,6 +176,18 @@ class Customize
         } else {
             return false;
         }
+    }
+
+    private function getMetaPivot($tableName)
+    {
+        $fkConstrainNames = $this->classMap[$tableName]->getPivotedConstrainNames();
+        $metaClass = $this->classMap[$tableName];
+        $relFkA = $this->tables[$tableName]->getForeignKey($fkConstrainNames[0]);
+        $relClassA = $this->classMap[$relFkA->getForeignTableName()];
+
+        $relFkB = $this->tables[$tableName]->getForeignKey($fkConstrainNames[1]);
+        $relClassB = $this->classMap[$relFkB->getForeignTableName()];
+        return new MetaPivot($metaClass, $relClassA, $relFkA, $relClassB, $relFkB);
     }
 
 }

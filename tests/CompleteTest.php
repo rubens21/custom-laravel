@@ -48,14 +48,14 @@ class CompleteTest extends TestCase
         $aluno->setName('Revisado '.rand(0, 9999));
         $aluno->setType('beginner');
         $aluno->setRevisor($professor);
-        $this->assertTrue($aluno->save());
+        $this->assertTrue($aluno->save(), 'Set testBelongsTo failed');
         $alunoId = $aluno->getId();
 
         $alunoRefreshed = Author::find($alunoId);
         $revisor = $alunoRefreshed->getRevisor();
 
         $this->assertInstanceof(Author::class,$revisor);
-        $this->assertEquals($professorId,$revisor->getId());
+        $this->assertEquals($professorId,$revisor->getId(), 'Get testBelongsTo failed');
     }
 
 
@@ -71,14 +71,14 @@ class CompleteTest extends TestCase
         $aluno->setName('Revisado'.rand(0, 9999));
         $aluno->setType('beginner');
         $aluno->setRevisor($professor);
-        $this->assertTrue($aluno->save());
+        $this->assertTrue($aluno->save(), 'Set testHasOne failed');
         $alunoId = $aluno->getId();
 
         $professorRefreshed = Author::find($professorId);
         $dependente = $professorRefreshed->getDependent();
 
         $this->assertInstanceof(Author::class,$professorRefreshed);
-        $this->assertEquals($alunoId,$dependente->getId());
+        $this->assertEquals($alunoId,$dependente->getId(), 'Get testHasOne failed');
         echo $dependente->getName();
     }
 
@@ -116,6 +116,74 @@ class CompleteTest extends TestCase
         $post2Refreshed = Post::find($post2Id);
         $this->assertInstanceof(Post::class,$post2Refreshed);
         $this->assertEquals($autorId,$post2Refreshed->getAuthor()->getId());
+
+    }
+    public function testBelongsToMany()
+    {
+
+        //region Criating objects
+        $autor = new Author();
+        $autor->setName('Revisor '.rand(0, 9999));
+        $autor->setType('beginner');
+        $autor->save();
+
+        $post1 = new Post();
+        $post1->setAuthor($autor);
+        $post1->setTitle('Test 1 - '.rand(0, 9999));
+        $post1->setContent('CONTENT  '.rand(0, 9999));
+        $post1->setPublicatedAt(Carbon::now()->addDays(2));
+        $post1->save();
+
+        $tag1 = new Tag();
+        $tag1->setLabel('Test 1 - '.rand(0, 9999));
+        $tag1->save();
+
+        $post2 = new Post();
+        $post2->setAuthor($autor);
+        $post2->setTitle('Test 1 - '.rand(0, 9999));
+        $post2->setContent('CONTENT  '.rand(0, 9999));
+        $post2->setPublicatedAt(Carbon::now()->addDays(2));
+        $post2->save();
+
+        $tag2 = new Tag();
+        $tag2->setLabel('Test 2 - '.rand(0, 9999));
+        $tag2->save();
+        //endregion
+
+        $post1->addTag($tag1);
+        $this->assertCount(1, $post1->listTags(), '1A- Number o of Belongs to maany failed');
+        $this->assertCount(1, $tag1->listPosts(), '1B- Number o of Belongs to maany failed');
+        $this->assertCount(0, $tag2->listPosts(), '1C- Number o of Belongs to maany failed');
+        $this->assertCount(1, $post1->listTags()[0]->listPosts(), '1D- Number o of Belongs to maany failed');
+        $this->assertEquals($post1->listTags()[0]->getId(), $tag1->getId(), '1- The listed element should be the same was add');
+
+        $post2->addTag($tag1);
+        $this->assertCount(1, $post1->listTags(), '2A- Number o of Belongs to maany failed');
+        $this->assertCount(2, $tag1->listPosts(), '2B- Number o of Belongs to maany failed');
+        $this->assertCount(0, $tag2->listPosts(), '2C- Number o of Belongs to maany failed');
+        $this->assertCount(2, $post1->listTags()[0]->listPosts(), '2D- Number o of Belongs to maany failed');
+        $this->assertEquals($post2->listTags()[0]->getId(), $tag1->getId(), '2- The listed element should be the same was add');
+
+        $tag2->addPost($post1);
+        $this->assertCount(2, $post1->listTags(), '3A- Number o of Belongs to maany failed');
+        $this->assertCount(2, $tag1->listPosts(), '3B- Number o of Belongs to maany failed');
+        $this->assertCount(1, $tag2->listPosts(), '3C- Number o of Belongs to maany failed');
+        $this->assertCount(2, $post1->listTags()[0]->listPosts(), '3D- Number o of Belongs to maany failed');
+        $this->assertEquals($tag2->listPosts()[0]->getId(), $post1->getId(), '3- The listed element should be the same was add');
+
+        $tag2->addPost($post2);
+        $this->assertCount(2, $post1->listTags(), '4A- Number o of Belongs to maany failed');
+        $this->assertCount(2, $tag1->listPosts(), '4B- Number o of Belongs to maany failed');
+        $this->assertCount(2, $tag2->listPosts(), '4C- Number o of Belongs to maany failed');
+        $this->assertCount(2, $post1->listTags()[0]->listPosts(), '4D- Number o of Belongs to maany failed');
+        $this->assertEquals($tag2->listPosts()[1]->getId(), $post2->getId(), '4- The listed element should be the same was add');
+
+        try {
+            $tag1->addPost($post1);
+            $this->fail('Should not accept add twice');
+        } catch (\Exception $e) {
+            $this->assertTrue(true);
+        }
 
     }
 

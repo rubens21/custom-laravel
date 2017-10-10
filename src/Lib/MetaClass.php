@@ -178,7 +178,7 @@ class MetaClass
         return ($meta && isset($meta['pivot']));
     }
 
-    public function getPivotedTables():array
+    public function getPivotedConstrainNames():array
     {
         return preg_split('/\|/',$this->getMetaData()['pivot']);
     }
