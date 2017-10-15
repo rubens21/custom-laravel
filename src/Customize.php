@@ -15,6 +15,7 @@ use CST21\Lib\MetaAttributeHasMany;
 use CST21\Lib\MetaAttributeHasOne;
 use CST21\Lib\MetaClass;
 use CST21\Lib\MetaPivot;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\MySqlConnection;
 
 class Customize
@@ -41,14 +42,23 @@ class Customize
      */
     private $tables = [];
 
+
+    private $config = [
+        'path' => './',
+        'namespace' => 'App',
+    ];
+
     /**
      * Customize constructor.
      *
-     * @param MySqlConnection $connection
+     * @param DatabaseManager $connection
+     * @param array $config
      */
-    public function __construct(MySqlConnection $connection)
+    public function __construct(DatabaseManager $connection, array $config = [])
     {
         $this->connection = $connection;
+        if($config)
+            $this->config = $config;
     }
 
 
@@ -80,6 +90,7 @@ class Customize
             if(!in_array($tableName, $this->ignoreTableList)) {
                 $this->tables[$tableName] = $this->connection->getDoctrineSchemaManager()->listTableDetails($tableName);
                 $metaClass = new MetaClass($tableName);
+                $metaClass->setBaseNamespace($this->config['namespace']);
                 $metaClass->setComment($tableComments[$tableName]);
                 $this->classMap[$tableName] = $metaClass;
             }

@@ -41,9 +41,10 @@ class MetaClass
      */
     private $uses = [];
 
+    private $baseNamespace = ['App'];
+
     const IGNORE_ATTRIBUTES = ['id', 'createdAt', 'updatedAt'];
 
-    const DEFAULT_NS = ['App'];
 
     const DEFAULT_PARENT = ['CST21', 'Shareables', 'BaseModel'];
 
@@ -196,13 +197,25 @@ class MetaClass
     public function getFullClassNameLevels()
     {
         $meta = $this->getMetaData();
-        $ns = self::DEFAULT_NS;
+        $ns = $this->baseNamespace;
         if($meta && isset($meta['ns'])) {
             $ns = array_merge($ns, explode('\\', $meta['ns']));
         }
         $ns[] = $this->getClassName();
         return $ns;
     }
+
+    /**
+     * @param array $baseNamespace
+     * @return MetaClass
+     */
+    public function setBaseNamespace(string $baseNamespace): MetaClass
+    {
+        $this->baseNamespace = explode('\\', $baseNamespace);
+        return $this;
+    }
+
+
 
     public function getNamespace()
     {

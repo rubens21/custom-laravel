@@ -1,6 +1,6 @@
 <?php
 
-namespace ILazi\Coders\Console;
+namespace CST21\commands;
 
 use CST21\Customize;
 use Illuminate\Console\Command;
@@ -43,9 +43,16 @@ class CST21GeneratorCommand extends Command
      */
     public function handle()
     {
-        //$table = $this->getTable();
-        $this->customizer->map();
-        $this->customizer->saveFiles(__DIR__.'/sample');
+        try{
+            $this->comment("Generating models in ".config('cst21.path'));
+            //$table = $this->getTable();
+            $this->customizer->map();
+            $this->comment("Db mapped");
+            $this->customizer->saveFiles(config('cst21.path'));
+            $this->info("Success");
+        } catch (\Exception $e) {
+            $this->error("Sorry: ".$e->getMessage());
+        }
     }
 
 

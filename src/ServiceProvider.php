@@ -8,10 +8,10 @@
 
 namespace CST21;
 
+use CST21\commands\CST21GeneratorCommand;
+use Illuminate\Support\ServiceProvider as SP;
 
-use ILazi\Coders\Console\CST21GeneratorCommand;
-
-class ServiceProvider
+class ServiceProvider extends SP
 {
     /**
      * @var bool
@@ -55,7 +55,7 @@ class ServiceProvider
     {
         $this->app->singleton(Customize::class, function ($app) {
             return new Customize(
-                $app->make('db')
+                $app->make('db'), config('cst21')
             );
         });
     }
@@ -67,4 +67,5 @@ class ServiceProvider
     {
         return [Customize::class];
     }
+
 }
