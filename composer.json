@@ -33,7 +33,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "CST21\\Custom21ServiceProvider"
+                "CST21\\ServiceProvider"
             ]
         }
     }
