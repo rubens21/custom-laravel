@@ -60,13 +60,6 @@ class MetaClass
     /**
      * @return string
      */
-    public function getName():string
-    {
-        return $this;
-    }
-    /**
-     * @return string
-     */
     public function getTableName():string
     {
         return $this->table;
@@ -224,7 +217,7 @@ class MetaClass
 
     public function getClassName()
     {
-        return self::convertTableNameToClassName($this->table);
+        return $this->getCustomName() ?? self::convertTableNameToClassName($this->table);
     }
     public static function convertTableNameToClassName(string $tableName)
     {
@@ -350,10 +343,16 @@ class MetaClass
 
     private function getBodyAttributes()
     {
+
+        if($this->getCustomName()){
+            $attributes[] = 'protected $table = \''.$this->getTableName().'\';';
+        }
+
         $atts = $this->getMethods();
         $attributes[] = 'protected static $__relationships = '.var_export($this->getRelationShips(), true).';';
         $attributes[] = 'protected static $__attSet = '.var_export($atts['setters'], true).';';
         $attributes[] = 'protected static $__attGet = '.var_export($atts['getters'], true).';';
+
         return implode("\n", $attributes);
 
 
@@ -385,7 +384,15 @@ class MetaClass
         return implode("\n", $classes);
     }
 
-
+    private function getCustomName()
+    {
+        $meta = $this->getMetaData();
+        if($meta && isset($meta['class_name'])) {
+            return $meta['class_name'];
+        } else {
+            return null;
+        }
+    }
 
 
 }

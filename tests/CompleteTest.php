@@ -11,6 +11,7 @@ namespace Tests;
 
 
 use App\Author;
+use App\Comment;
 use App\Posts\Post;
 use App\Posts\Tag;
 use Carbon\Carbon;
@@ -33,6 +34,7 @@ class CompleteTest extends TestCase
             include_once (__DIR__.'/sample/Posts/Tag.php');
             include_once (__DIR__.'/sample/Posts/Post.php');
             include_once (__DIR__.'/sample/Author.php');
+            include_once (__DIR__.'/sample/Comment.php');
         }
 
     }
@@ -183,7 +185,37 @@ class CompleteTest extends TestCase
         } catch (\Exception $e) {
             $this->assertTrue(true);
         }
+    }
+
+    public function testCustomizedName()
+    {
+        //region Criating objects
+        $autor = new Author();
+        $autor->setName('Revisor '.rand(0, 9999));
+        $autor->setType('beginner');
+        $autor->save();
+
+        $post1 = new Post();
+        $post1->setAuthor($autor);
+        $post1->setTitle('Test 1 - '.rand(0, 9999));
+        $post1->setContent('CONTENT  '.rand(0, 9999));
+        $post1->setPublicatedAt(Carbon::now()->addDays(2));
+        $post1->save();
+
+        //endregion
+
+        $comment = new Comment();
+        $comment->setPost($post1)->setName('José da Silva')->setComment('CST21 é legalzinho');
+        $this->assertTrue($comment->save());
+        $commentId = $comment->getId();
+
+        $commentRefreshed = Comment::find($commentId);
+
+        $this->assertEquals($commentRefreshed->getName(), 'José da Silva');
+        $this->assertEquals($commentRefreshed->getId(), $commentId);
+        $this->assertEquals($commentRefreshed->getPost()->getId(), $post1->getId());
 
     }
+
 
 }
