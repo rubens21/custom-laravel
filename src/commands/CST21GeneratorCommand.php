@@ -4,6 +4,7 @@ namespace CST21\commands;
 
 use CST21\Customize;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Helper\Table;
 
 class CST21GeneratorCommand extends Command
 {
@@ -48,7 +49,17 @@ class CST21GeneratorCommand extends Command
             //$table = $this->getTable();
             $this->customizer->map();
             $this->comment("Db mapped");
-            $this->customizer->saveFiles(config('cst21.path'));
+			$table = new Table($this->output);
+			$table->setHeaders(['Table', 'Class', 'Path']);
+			foreach ($this->customizer->getClasses() as $tableName => $metaClass){
+				$result = $this->customizer->saveClassFile($tableName, config('cst21.path'));
+				if($result === false ) {
+					$this->error("$tableName Failed!");
+				} else {
+					$table->addRow([$tableName, $result['class_name'], $result['path']]);
+				}
+			}
+			$table->render();
             $this->info("Success");
         } catch (\Exception $e) {
             $this->error("Sorry: ".$e->getMessage());

@@ -221,7 +221,7 @@ class MetaClass
     }
     public static function convertTableNameToClassName(string $tableName)
     {
-        return Str::ucfirst(Str::singular($tableName));
+        return Str::studly(Str::singular($tableName));
     }
 
     private function getParentClass()

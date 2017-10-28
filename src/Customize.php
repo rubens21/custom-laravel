@@ -76,12 +76,29 @@ class Customize
 
     public function saveFiles($defaultNSDir)
     {
-        foreach ($this->getClasses() as $metaClass){
-            $relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$metaClass->getRelativeFilePath();
-            $this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
-            file_put_contents($relativeFilePath, $metaClass->generateCode());
+        foreach ($this->getClasses() as $tableName => $metaClass){
+            $this->saveClassFile($tableName, $defaultNSDir);
         }
     }
+
+    public function saveClassFile($tableName, $defaultNSDir)
+	{
+		$classes = $this->getClasses();
+		if(!isset($classes[$tableName])) {
+			throw new \Exception('Table inexistent: '.$tableName);
+		}
+		$relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$classes[$tableName]->getRelativeFilePath();
+		$this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
+		if(file_put_contents($relativeFilePath, $classes[$tableName]->generateCode()) !== false){
+			return [
+			  'class_name' => $classes[$tableName]->getFullClassName(),
+			  'path' => $relativeFilePath
+			];
+		} else {
+			return false;
+		}
+	}
+
 
     private function mapTables(array $tables)
     {
