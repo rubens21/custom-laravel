@@ -52,12 +52,16 @@ class CST21GeneratorCommand extends Command
 			$table = new Table($this->output);
 			$table->setHeaders(['Table', 'Class', 'Path']);
 			foreach ($this->customizer->getClasses() as $tableName => $metaClass){
-				$result = $this->customizer->saveClassFile($tableName, config('cst21.path'));
-				if($result === false ) {
-					$this->error("$tableName Failed!");
-				} else {
-					$table->addRow([$tableName, $result['class_name'], $result['path']]);
-				}
+			    if($metaClass->shouldBeIgnored()) {
+					$table->addRow([$tableName, '', '-- ignored --']);
+                } else {
+					$result = $this->customizer->saveClassFile($tableName, config('cst21.path'));
+					if($result === false ) {
+						$this->error("$tableName Failed!");
+					} else {
+						$table->addRow([$tableName, $result['class_name'], $result['path']]);
+					}
+                }
 			}
 			$table->render();
             $this->info("Success");

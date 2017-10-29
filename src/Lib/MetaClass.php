@@ -171,6 +171,12 @@ class MetaClass
         return ($meta && isset($meta['pivot']));
     }
 
+	public function shouldBeIgnored():?bool
+	{
+		$meta = $this->getMetaData();
+		return ($meta && isset($meta['ignore']) && filter_var($meta['ignore'], FILTER_VALIDATE_BOOLEAN));
+	}
+
     public function getPivotedConstrainNames():array
     {
         return preg_split('/\|/',$this->getMetaData()['pivot']);
