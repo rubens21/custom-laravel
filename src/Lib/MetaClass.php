@@ -111,10 +111,10 @@ class MetaClass
     /**
      * @param array $tableMetaData
      */
-    public function setTableMetaData(array $tableMetaData)
-    {
-        $this->tableMetaData = $tableMetaData;
-    }
+//    public function setTableMetaData(array $tableMetaData)
+//    {
+//        $this->tableMetaData = $tableMetaData;
+//    }
 
     /**
      * @return string

@@ -62,7 +62,13 @@ class MetaAttributeHasOne extends MetaAttribute
 
     protected function getRelationshipName($fieldName)
     {
-        return parent::getRelationshipName($this->getRelatedForignKeyConstraint()->getName());
+		parse_str($this->getRelatedForignKeyConstraint()->getName(), $output);
+		if($output && isset($output['rel'])) {
+			$relName = $output['rel'];
+		} else {
+			$relName = $this->getRelatedForignKeyConstraint()->getName();
+		}
+        return parent::getRelationshipName($relName);
     }
 
     public function getSetMethodData()
@@ -108,5 +114,6 @@ class MetaAttributeHasOne extends MetaAttribute
     {
         return [$this->getRelatedClass()->getFullClassName()];
     }
+
 
 }
