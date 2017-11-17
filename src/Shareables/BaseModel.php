@@ -16,6 +16,14 @@ use Illuminate\Database\Eloquent\Model;
  * Class BaseModel
  * @package App\Model
  * @property int $id
+ * @method static $this find($id, $columns = ['*'])
+ * @method static $this findOrFail($id, $columns = ['*'])
+ * @method static $this first($columns = ['*'])
+ * @method static $this|$this[] get($columns = ['*'])
+ * @method static $this|$this[] where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static $this|$this[] orWhere($column, $operator = null, $value = null)
+ * @method static $this|$this[] with($relations)
+ * @method static $this getQuery()
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
