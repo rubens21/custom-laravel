@@ -15,6 +15,7 @@ use CST21\Lib\MetaAttributeHasMany;
 use CST21\Lib\MetaAttributeHasOne;
 use CST21\Lib\MetaClass;
 use CST21\Lib\MetaPivot;
+use CST21\Shareables\BaseModel;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\MySqlConnection;
 
@@ -74,11 +75,12 @@ class Customize
         $this->mapFields($tables);
     }
 
-    public function saveFiles($defaultNSDir)
+    public function saveFiles($defaultNSDir, $mapPath)
     {
         foreach ($this->getClasses() as $tableName => $metaClass){
             $this->saveClassFile($tableName, $defaultNSDir);
         }
+        $this->saveMapFile($mapPath);
     }
 
     public function saveClassFile($tableName, $defaultNSDir)
@@ -99,6 +101,36 @@ class Customize
 		}
 	}
 
+	public function saveMapFile($mapPath)
+	{
+		$mapCode = [];
+		foreach ($this->getClasses() as $tableName => $metaClass){
+			$mapCode[] = '\\'.$metaClass->getFullClassName()."::class => [\n".$this->arrayToSourceCode($metaClass->getRelMap(), 2)."\n\t]";
+		}
+		$code = '<?php '."\nreturn [\n\t".implode(",\n\t", $mapCode)."\n];";
+		if(file_put_contents($mapPath, $code) !== false){
+			return $mapPath;
+		} else {
+			return false;
+		}
+	}
+
+	private function arrayToSourceCode(array $arr, $level = 0)
+	{
+		$code = [];
+		$ident = str_repeat("\t", $level);
+		foreach ($arr as $key => $val )
+		{
+			$string = $ident."'$key' => ";
+			if(is_array($val)) {
+				$string .= "[\n".$this->arrayToSourceCode($val, $level+1)."\n$ident],";
+			} else {
+				$string .= var_export($val, true).',';
+			}
+			$code[] = $string;
+		}
+		return implode("\n", $code);
+	}
 
     private function mapTables(array $tables)
     {
@@ -208,5 +240,7 @@ class Customize
         $relClassB = $this->classMap[$relFkB->getForeignTableName()];
         return new MetaPivot($metaClass, $relClassA, $relFkA, $relClassB, $relFkB);
     }
+
+
 
 }

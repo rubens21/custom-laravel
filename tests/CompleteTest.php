@@ -16,6 +16,7 @@ use App\Posts\Post;
 use App\Posts\Tag;
 use Carbon\Carbon;
 use CST21\Customize;
+use CST21\Shareables\BaseModel;
 
 class CompleteTest extends TestCase
 {
@@ -29,12 +30,14 @@ class CompleteTest extends TestCase
             self::$wasSettedUp = true;
             $Cust = new Customize($this->getConnection());
             $Cust->map();
-            $Cust->saveFiles(__DIR__.'/sample');
+            $Cust->saveFiles(__DIR__.'/sample', __DIR__.'/sample/Map.php');
             include_once  (__DIR__.'/../src/Shareables/BaseModel.php');
             include_once (__DIR__.'/sample/Posts/Tag.php');
             include_once (__DIR__.'/sample/Posts/Post.php');
             include_once (__DIR__.'/sample/Author.php');
             include_once (__DIR__.'/sample/Comment.php');
+            $map = require (__DIR__.'/sample/Map.php');
+            BaseModel::loadMap($map);
         }
 
     }

@@ -7,6 +7,7 @@
  */
 
 namespace CST21\Lib;
+use CST21\Shareables\BaseModel;
 use Illuminate\Support\Str;
 
 class MetaClass
@@ -349,19 +350,20 @@ class MetaClass
 
     private function getBodyAttributes()
     {
-
+		$attributes = [];
         if($this->getCustomName()){
             $attributes[] = 'protected $table = \''.$this->getTableName().'\';';
         }
-
-        $atts = $this->getMethods();
-        $attributes[] = 'protected static $__relationships = '.var_export($this->getRelationShips(), true).';';
-        $attributes[] = 'protected static $__attSet = '.var_export($atts['setters'], true).';';
-        $attributes[] = 'protected static $__attGet = '.var_export($atts['getters'], true).';';
-
         return implode("\n", $attributes);
+    }
+    public function getRelMap()
+    {
+        $atts = $this->getMethods();
+        $attributes[BaseModel::MAP_RELATIONSHIP] = $this->getRelationShips();
+        $attributes[BaseModel::MAP_SETTERS] = $atts['setters'];
+        $attributes[BaseModel::MAP_GETTERS] = $atts['getters'];
 
-
+        return $attributes;
     }
 
     private function getImports()

@@ -9,6 +9,7 @@
 namespace CST21;
 
 use CST21\commands\CST21GeneratorCommand;
+use CST21\Shareables\BaseModel;
 use Illuminate\Support\ServiceProvider as SP;
 
 class ServiceProvider extends SP
@@ -34,6 +35,9 @@ class ServiceProvider extends SP
                 CST21GeneratorCommand::class,
             ]);
         }
+        if(file_exists(config('cst21.path_map'))) {
+			BaseModel::loadMap(require (config('cst21.path_map')));
+		}
     }
 
     /**

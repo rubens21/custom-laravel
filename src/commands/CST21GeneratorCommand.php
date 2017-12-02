@@ -63,6 +63,8 @@ class CST21GeneratorCommand extends Command
 					}
                 }
 			}
+			$this->customizer->saveMapFile(config('cst21.path_map'));
+			$this->comment("Class map save at ".config('cst21.path_map'));
 			$table->render();
             $this->info("Success");
         } catch (\Exception $e) {
