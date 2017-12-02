@@ -10,6 +10,7 @@ namespace CST21\Shareables;
 
 
 use Carbon\Carbon;
+use CST21\BadMappingException;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -33,9 +34,7 @@ abstract class BaseModel extends Model
 	const MAP_SETTERS = 'setters';
 	const MAP_GETTERS = 'getters';
 
-//    protected static $__relationships = [];
-//    protected static $__attSet = [];
-//    protected static $__attGet = [];
+    protected static $cst21MapClass = null;
 
 	private static $map = [];
 
@@ -51,19 +50,28 @@ abstract class BaseModel extends Model
 		self::$map = $map;
 	}
 
+	protected static function getMyMap()
+	{
+		$mapIndex = static::$cst21MapClass ?: static::class;
+		if(!isset(self::$map[$mapIndex])) {
+			throw new BadMappingException('Class not mapped on CST21: '.$mapIndex);
+		}
+		return self::$map[$mapIndex];
+	}
+
 	private function getClassSetters()
 	{
-		return self::$map[static::class][self::MAP_SETTERS];
+		return self::getMyMap()[self::MAP_SETTERS];
 	}
 
 	private function getClassGetters()
 	{
-		return self::$map[static::class][self::MAP_GETTERS];
+		return self::getMyMap()[self::MAP_GETTERS];
 	}
 
 	private function getClassRelationships()
 	{
-		return self::$map[static::class][self::MAP_RELATIONSHIP];
+		return self::getMyMap()[self::MAP_RELATIONSHIP];
 	}
 
 	/**
