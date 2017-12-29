@@ -46,7 +46,7 @@ class Customize
 
     private $config = [
         'path' => './',
-        'namespace' => 'App',
+        'namespaces' => ['App'],
     ];
 
     /**
@@ -65,15 +65,45 @@ class Customize
 
     public function map()
     {
-        $this->connection
-            ->getDoctrineConnection()
-            ->getDatabasePlatform()
-            ->registerDoctrineTypeMapping('enum', 'string');
-
-        $tables = array_diff($this->connection->getDoctrineSchemaManager()->listTableNames(), $this->ignoreTableList);
-        $this->mapTables($tables);
-        $this->mapFields($tables);
+		$this->mapClasses();
+	//	$this->mapDb();
     }
+    private function mapClasses()
+	{
+		/** @var \Composer\Autoload\ClassLoader $autoLoader */
+		$autoLoader = require base_path('/vendor/autoload.php');
+
+		foreach ($this->config['namespaces'] as $nsAcceptable) {
+			foreach ($autoLoader->getClassMap() as $namespace => $file) {
+				if(preg_match("/^".addslashes($nsAcceptable)."/", $namespace)) {
+					require_once $file;
+				}
+			}
+		}
+		$children = array();
+		foreach( get_declared_classes() as $class ){
+			if( is_subclass_of( $class, BaseModel::class ) ) {
+				/** @var BaseModel $dummy */
+//				$children[$class::getTable()] = $class;
+//				$children[$class::getStaticTable()] = $class;
+				echo "\n".$class::getStaticTable()." -> ".$class;
+				$children[$class::getStaticTable()] = $class;
+			}
+
+		}
+		dd($children);
+	}
+    private function mapDb()
+	{
+		$this->connection
+		  ->getDoctrineConnection()
+		  ->getDatabasePlatform()
+		  ->registerDoctrineTypeMapping('enum', 'string');
+
+		$tables = array_diff($this->connection->getDoctrineSchemaManager()->listTableNames(), $this->ignoreTableList);
+		$this->mapTables($tables);
+		$this->mapFields($tables);
+	}
 
     public function saveFiles($defaultNSDir, $mapPath)
     {

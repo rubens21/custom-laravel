@@ -12,6 +12,8 @@ namespace CST21\Shareables;
 use Carbon\Carbon;
 use CST21\BadMappingException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use ReflectionClass;
 
 /**
  * Class BaseModel
@@ -200,4 +202,14 @@ abstract class BaseModel extends Model
 	}
 
     //endregion
+
+	public static function getStaticTable()
+	{
+		$reflectionClass = new ReflectionClass(static::class);
+		if(isset($reflectionClass->getDefaultProperties()['table'])) {
+			return $reflectionClass->getDefaultProperties()['table'];
+		} else {
+			return str_replace('\\', '', Str::snake(Str::plural(class_basename(static::class))));
+		}
+	}
 }

@@ -2,6 +2,6 @@
 
 return [
      'path' => app_path(),
-     'namespace' => 'App',
+     'namespaces' => ['App\\Models'],
      'path_map' => app_path('dbmap.php'),
 ];
