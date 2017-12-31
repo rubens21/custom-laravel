@@ -83,12 +83,13 @@ class MetaAttributeBelongsTo extends MetaAttribute
         return $this->getRelatedModelName();
     }
 
-    public function getRelationshipDefinition():?array
+    public function getRelationshipDefinition(array $classMap):?array
     {
+        $model = $classMap[$this->getRelatedClass()->getTableName()] ?? null;
         return [
-            $this->getRelationshipName($this->getFieldName()) => [
+              $this->getRelatedClass()->getTableName() => [
                 'rel' => 'belongsTo',
-                'model' => $this->getRelatedClass()->getFullClassName(),
+                'model' => $model ,
                 'local_col' => $this->getFieldName(),
                 'foreign_col' => $this->getForeignKeyConstraint()->getForeignColumns()[0]
             ]

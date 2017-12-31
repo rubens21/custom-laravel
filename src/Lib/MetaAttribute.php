@@ -88,6 +88,8 @@ class MetaAttribute
         if(!$this->column->getNotnull()) {
             $returnType .= '|null';
         }
+
+        echo "\n\n".$this->getFieldName();
         return [
             'type' => $returnType,
             'name' => $name,
@@ -177,7 +179,7 @@ class MetaAttribute
         return Str::camel($this->getFieldName());
     }
 
-    public function getRelationshipDefinition():?array
+    public function getRelationshipDefinition(array $classMap):?array
     {
         return null;
     }

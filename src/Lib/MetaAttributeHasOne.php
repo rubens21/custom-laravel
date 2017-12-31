@@ -93,12 +93,13 @@ class MetaAttributeHasOne extends MetaAttribute
         return $this->getRelatedForignKeyConstraint()->getName();
     }
 
-    public function getRelationshipDefinition():?array
+    public function getRelationshipDefinition(array $classMap):?array
     {
+        $model = $classMap[$this->getRelatedClass()->getTableName()] ?? null;
         return [
-            $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName()) => [
+            $this->getRelatedClass()->getTableName() => [
                 'rel' => 'hasOne',
-                'model' => $this->getRelatedClass()->getFullClassName(),
+                'model' => $model,
                 'local_col' => $this->getFieldName(),
                 'foreign_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0]
             ]

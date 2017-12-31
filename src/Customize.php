@@ -26,10 +26,15 @@ class Customize
      */
     private $connection;
 
-    private $ignoreTableList = ['migrations'];
+    private $ignoreTableList = ['migrations', 'SequelizeMeta'];
 
     /**
      * @var MetaClass[]
+     */
+    private $metaClassMap = [];
+
+    /**
+     * @var array
      */
     private $classMap = [];
 
@@ -62,37 +67,40 @@ class Customize
             $this->config = $config;
     }
 
-
+    /**
+     * @throws \Exception
+     */
     public function map()
     {
+        echo "\n\n======Nao esquece de dar dumpautoload ANTES ========\n\n";
 		$this->mapClasses();
-	//	$this->mapDb();
+		$this->mapDb();
     }
+
+    /**
+     * @throws \Exception
+     */
     private function mapClasses()
 	{
-		/** @var \Composer\Autoload\ClassLoader $autoLoader */
-		$autoLoader = require base_path('/vendor/autoload.php');
-
-		foreach ($this->config['namespaces'] as $nsAcceptable) {
-			foreach ($autoLoader->getClassMap() as $namespace => $file) {
-				if(preg_match("/^".addslashes($nsAcceptable)."/", $namespace)) {
-					require_once $file;
-				}
-			}
-		}
-		$children = array();
+		$this->loadExpectedClasses();
 		foreach( get_declared_classes() as $class ){
 			if( is_subclass_of( $class, BaseModel::class ) ) {
-				/** @var BaseModel $dummy */
-//				$children[$class::getTable()] = $class;
-//				$children[$class::getStaticTable()] = $class;
-				echo "\n".$class::getStaticTable()." -> ".$class;
-				$children[$class::getStaticTable()] = $class;
+				/** @var BaseModel $class */
+				if($class::isDefer()) {
+				    if(isset($this->classMap[$class::getStaticTable()])) {
+				        throw new \Exception('Only one model can represent a table (consider using an abstract class)');
+                    }
+                    $this->classMap[$class::getStaticTable()] = $class;
+                } else {
+				    echo "\nIgnoring rejected model class $class";
+                }
 			}
-
 		}
-		dd($children);
 	}
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     */
     private function mapDb()
 	{
 		$this->connection
@@ -135,7 +143,7 @@ class Customize
 	{
 		$mapCode = [];
 		foreach ($this->getClasses() as $tableName => $metaClass){
-			$mapCode[] = '\\'.$metaClass->getFullClassName()."::class => [\n".$this->arrayToSourceCode($metaClass->getRelMap(), 2)."\n\t]";
+			$mapCode[] = "'".$metaClass->getTableName()."' => [\n".$this->arrayToSourceCode($metaClass->getRelMap($this->classMap), 2)."\n\t]";
 		}
 		$code = '<?php '."\nreturn [\n\t".implode(",\n\t", $mapCode)."\n];";
 		if(file_put_contents($mapPath, $code) !== false){
@@ -169,9 +177,8 @@ class Customize
             if(!in_array($tableName, $this->ignoreTableList)) {
                 $this->tables[$tableName] = $this->connection->getDoctrineSchemaManager()->listTableDetails($tableName);
                 $metaClass = new MetaClass($tableName);
-                $metaClass->setBaseNamespace($this->config['namespace']);
                 $metaClass->setComment($tableComments[$tableName]);
-                $this->classMap[$tableName] = $metaClass;
+                $this->metaClassMap[$tableName] = $metaClass;
             }
         }
     }
@@ -179,13 +186,13 @@ class Customize
     private function mapFields(array $tables)
     {
         foreach ($tables as $tableName) {
-            $metaClass = $this->classMap[$tableName];
+            $metaClass = $this->metaClassMap[$tableName];
             $uniqueFields = $this->getUniqueFields($tableName);
             $specializedField = [];
             foreach ($this->tables[$tableName]->getForeignKeys() as $fk) {
                 foreach ($fk->getLocalColumns() as $fieldName) {
                     $specializedField[] = $fieldName;
-                    $referenciedMetaClass = $this->classMap[$fk->getForeignTableName()];
+                    $referenciedMetaClass = $this->metaClassMap[$fk->getForeignTableName()];
 
                     $docrineReferenciedTable = $this->connection->getDoctrineSchemaManager()->listTableDetails($fk->getForeignTableName());
                     $refericiedCol = $docrineReferenciedTable->getColumn($fk->getForeignColumns()[0]);
@@ -227,7 +234,7 @@ class Customize
 
     public function getClasses()
     {
-        return $this->classMap;
+        return $this->metaClassMap;
     }
 
     /**
@@ -261,16 +268,29 @@ class Customize
 
     private function getMetaPivot($tableName)
     {
-        $fkConstrainNames = $this->classMap[$tableName]->getPivotedConstrainNames();
-        $metaClass = $this->classMap[$tableName];
+        $fkConstrainNames = $this->metaClassMap[$tableName]->getPivotedConstrainNames();
+        $metaClass = $this->metaClassMap[$tableName];
         $relFkA = $this->tables[$tableName]->getForeignKey($fkConstrainNames[0]);
-        $relClassA = $this->classMap[$relFkA->getForeignTableName()];
+        $relClassA = $this->metaClassMap[$relFkA->getForeignTableName()];
 
         $relFkB = $this->tables[$tableName]->getForeignKey($fkConstrainNames[1]);
-        $relClassB = $this->classMap[$relFkB->getForeignTableName()];
+        $relClassB = $this->metaClassMap[$relFkB->getForeignTableName()];
         return new MetaPivot($metaClass, $relClassA, $relFkA, $relClassB, $relFkB);
     }
 
+    private function loadExpectedClasses()
+    {
+        /** @var \Composer\Autoload\ClassLoader $autoLoader */
+        $autoLoader = require base_path('/vendor/autoload.php');
+
+        foreach ($this->config['namespaces'] as $nsAcceptable) {
+            foreach ($autoLoader->getClassMap() as $namespace => $file) {
+                if(preg_match("/^".addslashes($nsAcceptable)."/", $namespace)) {
+                    require_once $file;
+                }
+            }
+        }
+    }
 
 
 }

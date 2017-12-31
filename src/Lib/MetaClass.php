@@ -224,7 +224,7 @@ class MetaClass
 
     public function getClassName()
     {
-        return $this->getCustomName() ?? self::convertTableNameToClassName($this->table);
+        return $this->getCustomName() ?? "ORMap".self::convertTableNameToClassName($this->table);
     }
     public static function convertTableNameToClassName(string $tableName)
     {
@@ -309,12 +309,12 @@ class MetaClass
 //        return $this;
 //    }
 
-    private function getRelationShips()
+    private function getRelationShips(array $classMap)
     {
         //@todo da pra melhorar isso mescaldno no ooutro metodo
         $relations = [];
         foreach ($this->getFields() as $field) {
-            $relDef = $field->getRelationshipDefinition();
+            $relDef = $field->getRelationshipDefinition($classMap);
             if($relDef) {
                 $relations = array_merge($relations, $relDef);
             }
@@ -340,7 +340,7 @@ class MetaClass
                 }
             }
         }
-
+        dd($getters);
         return [
             'setters' => $setters,
             'getters' => $getters,
@@ -356,10 +356,10 @@ class MetaClass
         }
         return implode("\n", $attributes);
     }
-    public function getRelMap()
+    public function getRelMap(array $classMap)
     {
         $atts = $this->getMethods();
-        $attributes[BaseModel::MAP_RELATIONSHIP] = $this->getRelationShips();
+        $attributes[BaseModel::MAP_RELATIONSHIP] = $this->getRelationShips($classMap);
         $attributes[BaseModel::MAP_SETTERS] = $atts['setters'];
         $attributes[BaseModel::MAP_GETTERS] = $atts['getters'];
 

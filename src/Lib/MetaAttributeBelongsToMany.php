@@ -42,14 +42,16 @@ class MetaAttributeBelongsToMany extends MetaAttributeHasOne
         $this->pivot = $pivot;
     }
 
-    public function getRelationshipDefinition():?array
+    public function getRelationshipDefinition(array $classMap):?array
     {
         $relatedClasseFk = $this->pivot->getRelatedForignKeyConstraint($this->myPivotIndex === MetaPivot::INDEX_A ? MetaPivot::INDEX_B : MetaPivot::INDEX_A);
+        $model = $classMap[$this->getRelatedClass()->getTableName()] ?? null;
         return [
-            $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName()) => [
+            $this->getRelatedClass()->getTableName() => [
+//            $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName()) => [
                 'rel' => 'belongsToMany',
                 'pivot' => $this->pivot->getPivotClass()->getTableName(),
-                'model' => $this->getRelatedClass()->getFullClassName(),
+                'model' => $model,
                 'local_col' => $this->getRelatedForignKeyConstraint()->getLocalColumns()[0],
                 'foreign_col' => $relatedClasseFk->getLocalColumns()[0]
             ]
