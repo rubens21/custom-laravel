@@ -89,7 +89,6 @@ class MetaAttribute
             $returnType .= '|null';
         }
 
-        echo "\n\n".$this->getFieldName();
         return [
             'type' => $returnType,
             'name' => $name,

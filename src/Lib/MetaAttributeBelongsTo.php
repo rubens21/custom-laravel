@@ -63,15 +63,6 @@ class MetaAttributeBelongsTo extends MetaAttribute
         return parent::getRelationshipName(str_replace('fk_', '', $fieldName));
     }
 
-//    public function getSetMethodData()
-//    {
-//        $args = $this->getRelatedModelName(). ' $'.$this->getRelatedModelName();// $this->getPhpFieldType().' $'.$this->getPhpAttributeName();
-//        if(!$this->getDoctrineColunm()->getNotnull()) {
-//            $args .= ' = null';
-//        }
-//        $signature = $this->transAttToMethod($this->getFieldName(), self::METHOD_SET_MODE).'('.$args.')';
-//        return ['type' => '$this', 'signature' => $signature, 'nullable' => $this->getDoctrineColunm()->getNotnull()];
-//    }
 
     protected function getPhpFieldType()
     {
@@ -95,17 +86,19 @@ class MetaAttributeBelongsTo extends MetaAttribute
             ]
         ];
     }
-    public function getSetMethodData()
+    public function getSetMethodData(array $classMap)
     {
         $data = parent::getSetMethodData();
-        $data['target'] = $this->getRelationshipName($this->getFieldName());
+		$model = $classMap[$this->getRelatedClass()->getTableName()] ?? null;
+        $data['target'] = $model;
         return $data;
     }
 
-    public function getGetMethodData()
+    public function getGetMethodData(array $classMap)
     {
         $data = parent::getGetMethodData();
-        $data['target'] = $this->getRelationshipName($this->getFieldName());
+		$model = $classMap[$this->getRelatedClass()->getTableName()] ?? null;
+		$data['target'] = $model;
         return $data;
     }
 
