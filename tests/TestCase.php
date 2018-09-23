@@ -2,14 +2,13 @@
 
 namespace Tests;
 use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\MySqlConnection;
 use PDO;
 use PDOException;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var \Illuminate\Database\MySqlConnection
+     * @var Manager
      */
     private $db;
 
@@ -33,14 +32,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     ]);
     // Setup the Eloquent ORM…
     $capsule->bootEloquent();
-            $this->db = $capsule->getConnection();
+            $this->db = $capsule->getDatabaseManager();
         } catch (PDOException $e) {
             echo 'Connection failed: ' . $e->getMessage();
         }
     }
 
     /**
-     * @return \Illuminate\Database\MySqlConnection
+     * @return Manager
      */
     public function getConnection(){
         return $this->db;

@@ -110,7 +110,8 @@ class MetaAttributeBelongsTo extends MetaAttribute
 
     public function getRelatedModelName()
     {
-        return MetaClass::convertTableNameToClassName($this->getForeignKeyConstraint()->getForeignTableName());
+//        return MetaClass::convertTableNameToClassName($this->getForeignKeyConstraint()->getForeignTableName());
+        return $this->relatedClass->getClassName();
     }
 
     public function getImportClasses(): array

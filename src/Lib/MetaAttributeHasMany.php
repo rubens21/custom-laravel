@@ -33,7 +33,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
             $returnType .= '|null';
         }
         $data['type'] = $returnType;
-        $data['target'] = $this->getRelationshipName($this->getRelatedForignKeyConstraint()->getName());
+        $data['target'] = $this->getRelationshipName($this->getRelatedForignKeyConstraint());
         return $data;
     }
 
@@ -53,7 +53,7 @@ class MetaAttributeHasMany extends MetaAttributeHasOne
 
     protected function getRelationshipName($fieldName)
     {
-        return Str::plural(parent::getRelationshipName($this->getRelatedForignKeyConstraint()->getName()));
+        return Str::plural(parent::getRelationshipName(''));
     }
 
 }

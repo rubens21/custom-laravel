@@ -1,9 +1,10 @@
 <?php
 
-namespace ILazi\Coders\Console;
+namespace CST21\commands;
 
 use CST21\Customize;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Helper\Table;
 
 class CST21GeneratorCommand extends Command
 {
@@ -43,9 +44,30 @@ class CST21GeneratorCommand extends Command
      */
     public function handle()
     {
-        //$table = $this->getTable();
-        $this->customizer->map();
-        $this->customizer->saveFiles(__DIR__.'/sample');
+        try{
+            $this->comment("Generating models in ".config('cst21.path'));
+            //$table = $this->getTable();
+            $this->customizer->map();
+            $this->comment("Db mapped");
+			$table = new Table($this->output);
+			$table->setHeaders(['Table', 'Class', 'Path']);
+			foreach ($this->customizer->getClasses() as $tableName => $metaClass){
+			    if($metaClass->shouldBeIgnored()) {
+					$table->addRow([$tableName, '', '-- ignored --']);
+                } else {
+					$result = $this->customizer->saveClassFile($tableName, config('cst21.path'));
+					if($result === false ) {
+						$this->error("$tableName Failed!");
+					} else {
+						$table->addRow([$tableName, $result['class_name'], $result['path']]);
+					}
+                }
+			}
+			$table->render();
+            $this->info("Success");
+        } catch (\Exception $e) {
+            $this->error("Sorry: ".$e->getMessage());
+        }
     }
 
 

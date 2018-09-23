@@ -15,6 +15,7 @@ use CST21\Lib\MetaAttributeHasMany;
 use CST21\Lib\MetaAttributeHasOne;
 use CST21\Lib\MetaClass;
 use CST21\Lib\MetaPivot;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\MySqlConnection;
 
 class Customize
@@ -41,14 +42,23 @@ class Customize
      */
     private $tables = [];
 
+
+    private $config = [
+        'path' => './',
+        'namespace' => 'App',
+    ];
+
     /**
      * Customize constructor.
      *
-     * @param MySqlConnection $connection
+     * @param DatabaseManager $connection
+     * @param array $config
      */
-    public function __construct(MySqlConnection $connection)
+    public function __construct(DatabaseManager $connection, array $config = [])
     {
         $this->connection = $connection;
+        if($config)
+            $this->config = $config;
     }
 
 
@@ -66,12 +76,29 @@ class Customize
 
     public function saveFiles($defaultNSDir)
     {
-        foreach ($this->getClasses() as $metaClass){
-            $relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$metaClass->getRelativeFilePath();
-            $this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
-            file_put_contents($relativeFilePath, $metaClass->generateCode());
+        foreach ($this->getClasses() as $tableName => $metaClass){
+            $this->saveClassFile($tableName, $defaultNSDir);
         }
     }
+
+    public function saveClassFile($tableName, $defaultNSDir)
+	{
+		$classes = $this->getClasses();
+		if(!isset($classes[$tableName])) {
+			throw new \Exception('Table inexistent: '.$tableName);
+		}
+		$relativeFilePath = $defaultNSDir.DIRECTORY_SEPARATOR.$classes[$tableName]->getRelativeFilePath();
+		$this->createDirIfNotExist(pathinfo($relativeFilePath, PATHINFO_DIRNAME));
+		if(file_put_contents($relativeFilePath, $classes[$tableName]->generateCode()) !== false){
+			return [
+			  'class_name' => $classes[$tableName]->getFullClassName(),
+			  'path' => $relativeFilePath
+			];
+		} else {
+			return false;
+		}
+	}
+
 
     private function mapTables(array $tables)
     {
@@ -80,6 +107,7 @@ class Customize
             if(!in_array($tableName, $this->ignoreTableList)) {
                 $this->tables[$tableName] = $this->connection->getDoctrineSchemaManager()->listTableDetails($tableName);
                 $metaClass = new MetaClass($tableName);
+                $metaClass->setBaseNamespace($this->config['namespace']);
                 $metaClass->setComment($tableComments[$tableName]);
                 $this->classMap[$tableName] = $metaClass;
             }

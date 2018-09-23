@@ -10,16 +10,12 @@ namespace CST21\Shareables;
 
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class BaseModel
  * @package App\Model
  * @property int $id
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @mixin Builder
  * @method static $this find($id, $columns = ['*'])
  * @method static $this findOrFail($id, $columns = ['*'])
  * @method static $this first($columns = ['*'])
@@ -28,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static $this|$this[] orWhere($column, $operator = null, $value = null)
  * @method static $this|$this[] with($relations)
  * @method static $this getQuery()
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 abstract class BaseModel extends Model
 {

@@ -41,9 +41,10 @@ class MetaClass
      */
     private $uses = [];
 
+    private $baseNamespace = ['App'];
+
     const IGNORE_ATTRIBUTES = ['id', 'createdAt', 'updatedAt'];
 
-    const DEFAULT_NS = ['App'];
 
     const DEFAULT_PARENT = ['CST21', 'Shareables', 'BaseModel'];
 
@@ -56,13 +57,6 @@ class MetaClass
         $this->table = $tableName;
     }
 
-    /**
-     * @return string
-     */
-    public function getName():string
-    {
-        return $this;
-    }
     /**
      * @return string
      */
@@ -117,10 +111,10 @@ class MetaClass
     /**
      * @param array $tableMetaData
      */
-    public function setTableMetaData(array $tableMetaData)
-    {
-        $this->tableMetaData = $tableMetaData;
-    }
+//    public function setTableMetaData(array $tableMetaData)
+//    {
+//        $this->tableMetaData = $tableMetaData;
+//    }
 
     /**
      * @return string
@@ -177,6 +171,12 @@ class MetaClass
         return ($meta && isset($meta['pivot']));
     }
 
+	public function shouldBeIgnored():?bool
+	{
+		$meta = $this->getMetaData();
+		return ($meta && isset($meta['ignore']) && filter_var($meta['ignore'], FILTER_VALIDATE_BOOLEAN));
+	}
+
     public function getPivotedConstrainNames():array
     {
         return preg_split('/\|/',$this->getMetaData()['pivot']);
@@ -196,13 +196,25 @@ class MetaClass
     public function getFullClassNameLevels()
     {
         $meta = $this->getMetaData();
-        $ns = self::DEFAULT_NS;
+        $ns = $this->baseNamespace;
         if($meta && isset($meta['ns'])) {
             $ns = array_merge($ns, explode('\\', $meta['ns']));
         }
         $ns[] = $this->getClassName();
         return $ns;
     }
+
+    /**
+     * @param array $baseNamespace
+     * @return MetaClass
+     */
+    public function setBaseNamespace(string $baseNamespace): MetaClass
+    {
+        $this->baseNamespace = explode('\\', $baseNamespace);
+        return $this;
+    }
+
+
 
     public function getNamespace()
     {
@@ -211,11 +223,11 @@ class MetaClass
 
     public function getClassName()
     {
-        return self::convertTableNameToClassName($this->table);
+        return $this->getCustomName() ?? self::convertTableNameToClassName($this->table);
     }
     public static function convertTableNameToClassName(string $tableName)
     {
-        return Str::ucfirst(Str::singular($tableName));
+        return Str::studly(Str::singular($tableName));
     }
 
     private function getParentClass()
@@ -337,10 +349,16 @@ class MetaClass
 
     private function getBodyAttributes()
     {
+
+        if($this->getCustomName()){
+            $attributes[] = 'protected $table = \''.$this->getTableName().'\';';
+        }
+
         $atts = $this->getMethods();
         $attributes[] = 'protected static $__relationships = '.var_export($this->getRelationShips(), true).';';
         $attributes[] = 'protected static $__attSet = '.var_export($atts['setters'], true).';';
         $attributes[] = 'protected static $__attGet = '.var_export($atts['getters'], true).';';
+
         return implode("\n", $attributes);
 
 
@@ -372,7 +390,15 @@ class MetaClass
         return implode("\n", $classes);
     }
 
-
+    private function getCustomName()
+    {
+        $meta = $this->getMetaData();
+        if($meta && isset($meta['class_name'])) {
+            return $meta['class_name'];
+        } else {
+            return null;
+        }
+    }
 
 
 }
